@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS =
+CFLAGS =-Wall
 DEPS = util/metadata.h
 OBJ = util/metadata.o main.o 
 

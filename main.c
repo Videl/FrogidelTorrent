@@ -5,10 +5,10 @@
 int main(int argc, char *argv[])
 {
 	printf("Hello world\n");
-	char *chr = "Test test test!";
 
-	Metadata* test = new_metadata(chr);
+	Metadata *dm = create_metadata_from_path("zer/main.c");
 
-	printf("Name: %s\n", test->md_name);
-	free_metadata(test);
+	free_metadata(dm);
+
+	return 0;
 }
