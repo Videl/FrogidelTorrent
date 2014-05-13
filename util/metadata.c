@@ -26,6 +26,18 @@ void free_metadata(Metadata *md)
 	free(md);
 }
 
+/**
+ * Create a new Metadata struct filled with every information
+ * obtainable.
+ *  * Filename
+ *  * Extension
+ *  * Some keywords (video, image, executable, etc)
+ *  * The (SHA1) hash
+ *
+ * The file is supposed to be checked for validity too (TODO).
+ *
+ * Side-effect: returns a new Metadata struct.
+ */
 Metadata *create_metadata_from_path(char pathFile[1000])
 {
 	char *file_name;
@@ -67,4 +79,44 @@ Metadata *create_metadata_from_path(char pathFile[1000])
 	
 	Metadata *md = new_metadata(file_name, extension, "", hash);
 	return md;
+}
+
+/**
+ * Adds a keyword to a Metadata struct.
+ * 
+ * Side-effect: Metadata `md` gets the keyword corresponding to
+ * 				`keyword` added to its list `md->md_keywords`.
+ */
+void add_keyword_to_metadata(Metadata *md, char keyword[255])
+{
+	
+}
+
+/**
+ * Remove a keyword from a Metadata struct.
+ * `keyword` contains the name of the keyword to remove.
+ *
+ * Side-effect: Metadata `md` gets the keyword corresponding to
+ * 				`keyword` removed from its list `md->md_keywords`.
+ * 				If it is not found, nothing is changed.
+ */
+void remove_keyword_to_metadata(Metadata *md, char keyword[255])
+{
+	
+}
+
+/**
+ * Adds a metadata struct to the list of metadata.
+ */
+void add_metadata_to_list()
+{
+
+}
+
+/**
+ * Remove a metadata struct to the list of metadata.
+ */
+void remove_metadata_from_list()
+{
+
 }
