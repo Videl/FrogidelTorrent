@@ -102,17 +102,18 @@ void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
             (struct sockaddr *) &serv_addr, sizeof(serv_addr)
             )) != strlen("PUBLISH"))
         {
-            perror ("Sendto error");
-            exit (1);
+            perror("No server accross the network! Can't start publishing!");
+            //exit (1);
         }
-
-        if ( (n= recvfrom (*serverSocket, sendbuf, sizeof(sendbuf)-1,0, 
-            (struct sockaddr *) &serv_addr, &len)) < 0 )
+        else
         {
-            printf ("erreur sendto");
-            exit (1);
+            if ((n= recvfrom (*serverSocket, sendbuf, sizeof(sendbuf)-1,0, 
+                (struct sockaddr *) &serv_addr, &len)) < 0 )
+            {
+                printf ("Error when following the publishing protocol.\n");
+                exit(1);
+            }
         }
-
         printf("Received %s !\n.", sendbuf);
 
         char *usermenu_continue[1] = {"Continue"};
@@ -174,5 +175,23 @@ void setup_publish_server(struct sockaddr_in *serv_addr, int *serverSocket, char
     {
         perror ("Socket error.");
         exit (1);
+    }
+
+    struct timeval timeout;      
+    timeout.tv_sec = 10;
+    timeout.tv_usec = 0;
+
+    if (setsockopt (*serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+                sizeof(timeout)) < 0)
+    {
+        // error("setsockopt failed\n");        
+        // Who cares
+    }
+
+    if (setsockopt (*serverSocket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+                sizeof(timeout)) < 0)
+    {
+        // error("setsockopt failed\n");        
+        // Who cares
     }
 }
