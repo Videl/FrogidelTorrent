@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "util/metadata.h"
+#include "util/usermenu.h"
 
 int main(int argc, char *argv[])
 {
@@ -9,6 +10,14 @@ int main(int argc, char *argv[])
 	Metadata *dm = create_metadata_from_path("zer/main.c");
 
 	free_metadata(dm);
+
+    int rc;
+    char buff[10];
+
+    read_line(buff, 10, stdin);
+
+    printf ("OK [%s]\n", buff);
+    printf ("OK [%d]\n", atoi(buff)+1);
 
 	return 0;
 }
