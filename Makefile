@@ -1,12 +1,13 @@
 CC = gcc
 CFLAGS =-Wall
-DEPS = util/metadata.h util/usermenu.h
+DEPS = util/metadata.h util/usermenu.h util/constants.h
 DEPS_O = util/metadata.o util/usermenu.o
 
 OBJMAIN = $(DEPS_O) main.o
 OBJSHARER = $(DEPS_O) sharer.o
+OBJSERVER = $(DEPS_O) server.o
 
-all: main sharer
+all: main sharer server
 	@echo "Done compiling all."
 
 %.o: %.c $(DEPS)
@@ -16,6 +17,9 @@ main: $(OBJMAIN)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 sharer: $(OBJSHARER)
+	$(CC) -o $@ $^ $(CFLAGS)
+
+server: $(OBJSERVER)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
