@@ -34,9 +34,7 @@ int get_integer_input()
 
     read_line(buff, sizeof(char)*5, stdin);
     choice = atoi(buff);
-
-    printf("\nRecorded (str) %s\n", buff);
-    printf("\nRecorded (int) %d\n", choice);
+    
     return choice;
 }
 
