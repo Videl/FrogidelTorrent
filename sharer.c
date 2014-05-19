@@ -41,8 +41,11 @@ int main(int argc, char *argv[])
 			case 666:
 				printf("Canceled.\n");
 				break;
+			default:
+				printf("Sorry, we couldn't manage your choice.\n");
+				break;
 		}
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }

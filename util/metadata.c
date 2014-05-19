@@ -14,6 +14,7 @@ Metadata *new_metadata(char name[], char extension[], char keywords[], char hash
 	strcpy(new_md->md_extension, extension);
 
 	/** Copy keywords */
+	strcpy(new_md->md_keywords, keywords);
 
 	/** Copy hash */
 	strcpy(new_md->md_hash, hash);

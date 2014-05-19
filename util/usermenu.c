@@ -17,6 +17,7 @@ int print_user_menu(char **usermenu, int number_of_choices)
 
 	printf("Your choice: ");
 	scanf("%d", &choice);
+	fflush(stdin);
 
 	return choice;
 }
