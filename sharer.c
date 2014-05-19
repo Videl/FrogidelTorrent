@@ -1,10 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/un.h>
+#include <arpa/inet.h>
+#include <sys/uio.h>
+#include <time.h>
+#include <sys/timeb.h>
+#include <netdb.h>
+#include <strings.h>
 #include "util/metadata.h"
 #include "util/usermenu.h"
 
 void publish_new_file();
 void search_for_a_file();
+void low_energy_server_run();
 
 int main(int argc, char *argv[])
 {
@@ -116,4 +127,9 @@ void search_for_a_file()
         //         break;
         // }
     }
+}
+
+void low_energy_server_run()
+{
+
 }
