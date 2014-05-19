@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS =-Wall
-DEPS = util/metadata.h util/usermenu.h util/constants.h
-DEPS_O = util/metadata.o util/usermenu.o
+DEPS = util/metadata.h util/usermenu.h util/constants.h server.h publish.h
+DEPS_O = util/metadata.o util/usermenu.o publish.o
 
 OBJMAIN = $(DEPS_O) main.o
 OBJSHARER = $(DEPS_O) sharer.o
