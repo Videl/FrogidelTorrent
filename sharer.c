@@ -4,6 +4,7 @@
 #include "util/usermenu.h"
 
 void publish_new_file();
+void search_for_a_file();
 
 int main(int argc, char *argv[])
 {
@@ -42,6 +43,8 @@ int main(int argc, char *argv[])
 				break;
 			case 2:
 				printf("Search for a file.\n");
+                search_for_a_file();
+
 				break;
 			case 3:
 				printf("Bye!\n");
@@ -69,7 +72,7 @@ void publish_new_file()
         printf("\n\n");
         printf("Please insert the file's absolute path:\n");
         char file[500];
-        
+
         read_line(file, sizeof(file), stdin);
 
         // TODO: PUBLISH THE FILE TO SERVER
@@ -85,5 +88,32 @@ void publish_new_file()
                 // do nothing, let's continue
                 break;
         }
+    }
+}
+
+void search_for_a_file()
+{
+    int stop = 1;
+    while(stop)
+    {
+        printf("\n");
+        printf("Please insert one keyword to search for: ");
+        char file[500];
+
+        read_line(file, sizeof(file), stdin);
+
+        // TODO: MAKE THE SEARCH
+
+        // char *usermenu_continue[1] = {"Continue"};
+        // int choice = print_user_menu(usermenu_continue, 1);
+        // switch(choice)
+        // {
+        //     case 666:
+        //         stop = 0;
+        //         break;
+        //     default:
+        //         // do nothing, let's continue
+        //         break;
+        // }
     }
 }
