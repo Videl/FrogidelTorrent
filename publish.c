@@ -55,7 +55,7 @@ Entry publish(struct sockaddr_in client_addr, int clilen)
 	/*
 	* Receiving metadata from client	
 	*/
-	if(recvfrom(publish_socket, &metadataFile, (size_t) sizeof(metadataFile), 0,
+	if(recvfrom(publish_socket, (void *)&metadataFile, (size_t) sizeof(metadataFile), 0,
 				(struct sockaddr *) &client_addr, (socklen_t *) &clilen) < 0)
 	{
 		perror("Error while receiving the metadata file\n");
