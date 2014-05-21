@@ -29,6 +29,19 @@ typedef struct Metadata
     char md_hash[41];
 } Metadata;
 
+typedef struct Entry
+{
+    /*
+    * Pair address
+    */
+    char pair_address[100];
+
+    /*
+    * File metadata
+    */
+    Metadata metadata;
+} Entry;
+
 Metadata *new_metadata(char name[], char extension[], char keywords[], char hash[]);
 void free_metadata(Metadata *md);
 Metadata *create_metadata_from_path(char pathFile[1000]);

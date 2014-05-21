@@ -1,20 +1,6 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-typedef struct Entry
-{
-	/*
-	* Pair address
-	*/
-	struct sockaddr_in pair_address;
-
-	/*
-	* File metadata
-	*/
-	Metadata metadata;
-} Entry;
-
-
 typedef struct ListEntry
 {
 	/**
