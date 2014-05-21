@@ -90,9 +90,12 @@ int main(int argc, char *argv[])
 			toPublish = publish(client_addr, clilen);
 			if(strcmp(toPublish.metadata.md_name, "ERROR") == 0)
 				printf("Fail to PUBLISH data\n");
-			
+
 			else
+			{
 				addEntry(toPublish, entries);
+				printf("File received\n");
+			}
 		}
 
 		//Search handler
