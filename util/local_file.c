@@ -28,3 +28,38 @@ LocalFile* file_hotload(char *path)
         return 0;
     }
 }
+
+
+
+
+void addLocalFile(LocalFile toAdd, ListLocalFile* entries[])
+{
+    ListLocalFile *entryToAdd = NULL;
+    ListLocalFile *path = NULL;
+    char c = toAdd.md->md_hash[0];
+    int listLookup = (int)strtol(&c, NULL, 16);
+
+    entryToAdd = (ListLocalFile*) malloc(sizeof(ListLocalFile));
+    if(!entryToAdd)
+    {
+        printf("Error while creating the list entry in memory\n");
+        exit(EXIT_FAILURE);
+    }
+
+    entryToAdd->entry = toAdd;
+    entryToAdd->next = NULL;
+
+    if(entries[listLookup] == NULL)
+    {
+        entries[listLookup] = entryToAdd;
+    }
+    else
+    {
+        path = entries[listLookup];
+        while(path->next != NULL)
+        {
+            path = path->next;
+        }
+        path->next = entryToAdd;
+    }
+}

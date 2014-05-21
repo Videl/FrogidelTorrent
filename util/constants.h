@@ -5,6 +5,8 @@
 #define PORT_ON_SERV				4001
 //#define PUBLISH_PORT_ON_SERV		4002
 #define INSTRUCTIONS_BUFFER_SIZE	100
+#define SPACER              " -> ### "
+#define ANTISPACER          " <- ### "
 
 // Color
 #define ANSI_COLOR_RED     "\x1b[31m"

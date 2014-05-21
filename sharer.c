@@ -10,17 +10,11 @@
 #include <sys/timeb.h>
 #include <netdb.h>
 #include <strings.h>
+#include "sharer.h"
 #include "util/metadata.h"
 #include "util/usermenu.h"
 #include "util/constants.h"
 #include "util/local_file.h"
-
-void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr);
-void search_for_a_file();
-void low_energy_server_run();
-void setup_publish_server(struct sockaddr_in *serv_addr, 
-                          int *serverSocket, 
-                          char *ip_addr);
 
 int main(int argc, char *argv[])
 {
@@ -33,9 +27,9 @@ int main(int argc, char *argv[])
     struct sockaddr_in serv_addr;
 
     /** Hashmap of local files */
-    LocalFile *local_files_list[100];
+    ListLocalFile *local_files_list[16];
 
-    for (i = 0; i < 100; i++)
+    for (i = 0; i < 16; i++)
     {
         local_files_list[i] = NULL;
     }
@@ -69,7 +63,7 @@ int main(int argc, char *argv[])
 				break;
 			case 1:
 				printf("Publish a new file.\n");
-                publish_new_file(&serverSocket, serv_addr);
+                publish_new_file(&serverSocket, serv_addr, local_files_list);
 
 				break;
 			case 2:
@@ -95,7 +89,10 @@ int main(int argc, char *argv[])
 	return EXIT_SUCCESS;
 }
 
-void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
+void publish_new_file(
+    int *serverSocket, 
+    struct sockaddr_in serv_addr, 
+    ListLocalFile **listOfLocalFiles)
 {
     int stop = 1;
     while(stop)
@@ -141,7 +138,7 @@ void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
                 {
 
                     // printf("Received %s !\n.", sendbuf);
-                    if (strcmp(sendbuf, "PUBLISH_READY"))
+                    if (strcmp(sendbuf, "PUBLISH_READY") == 0)
                     {
                         n = sendto(
                             *serverSocket, 
@@ -161,15 +158,18 @@ void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
                             (struct sockaddr *) &publish_server, 
                             &len
                         );
-                        // TODO : test if error.
+
+                        sendbuf[n] = '\0';
                         
-                        if (strcmp(sendbuf, "PUBLISH_ACK"))
+                        if (strcmp(sendbuf, "PUBLISH_ACK") == 0)
                         {
-                            printf("Publishing of file is complete.\n");
+                            printf(ANSI_COLOR_CYAN ANTISPACER "Publishing of file is complete.\n"ANSI_COLOR_RESET);
+                            addLocalFile(*fl, listOfLocalFiles);
                         }
                         else
                         {
                             printf("Publishing of file is FAILED.\n");
+                            printf("Received: %s, %d\n", sendbuf, (int) strlen(sendbuf));
                         }
                     }
                 }

@@ -20,7 +20,18 @@ typedef struct LocalFile
     
 } LocalFile;
 
+
+typedef struct ListLocalFile
+{
+    LocalFile entry;
+
+    struct ListLocalFile *next;
+
+} ListLocalFile;
+
 LocalFile* new_localfile(char *path, Metadata *md);
 LocalFile* file_hotload(char *path);
+
+void addLocalFile(LocalFile toAdd, ListLocalFile* entries[]);
 
 #endif /* LOCALFILE_H */

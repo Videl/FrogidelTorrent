@@ -11,7 +11,6 @@ int main(int argc, char *argv[])
 
 	free_metadata(dm);
 
-    int rc;
     char buff[10];
 
     read_line(buff, 10, stdin);
