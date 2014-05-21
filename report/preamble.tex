@@ -1,0 +1,45 @@
+% Classe du document
+\documentclass[a4paper, 11pt]{article}
+
+%Inclusion des packages utiles
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage[francais]{babel}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{soul}
+\usepackage{listings}
+\usepackage{listingsutf8}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{eso-pic}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage[nottoc, notlof, notlot]{tocbibind}
+
+\definecolor{conf}{gray}{0.82}
+
+%Style des paragraphes de remarques
+\newtheorem*{remarque}{Remarque}
+
+%Gestion des tailles
+\setlength{\parskip}{1.1em}
+
+%Redéfinition des commandes
+\renewcommand{\emph}{\textbf}
+
+%Définition des paramètres des blocs code
+\lstset
+{
+	language = C,
+	basicstyle = \normalsize,
+	numberstyle = \normalsize,
+	numbersep = 10pt,
+	backgroundcolor = \color{white},
+	breaklines=true,
+	tabsize=4,
+}
