@@ -48,8 +48,8 @@ int main(int argc, char *argv[])
 		printf("\n\n");
 		printf("What would you like to do?\n");
 
-		char *usermenu1[4] = {"Change the central server's address ip.", "Publish a new file.", "Search for a file"};
-		int choice = print_user_menu(usermenu1, 3);
+		char *usermenu1[4] = {"Change the central server's address ip.", "Publish a new file.", "Search for a file", "See the file you published"};
+		int choice = print_user_menu(usermenu1, 4);
 
 		switch(choice)
 		{
@@ -71,6 +71,24 @@ int main(int argc, char *argv[])
                 search_for_a_file();
 
 				break;
+            case 3:
+                printf("List of published files:\n");
+                int i;
+                for (i = 0; i < 16; i++)
+                {
+                    ListLocalFile *mlf = local_files_list[i];
+                    if (mlf != NULL)
+                    {
+                        while(mlf->next != NULL)
+                        {
+                            printf(ANSI_COLOR_CYAN ANTISPACER"%s\n"ANSI_COLOR_RESET, mlf->entry.path);
+                            mlf = mlf->next;
+                        }
+                        printf(ANSI_COLOR_CYAN ANTISPACER"%s\n"ANSI_COLOR_RESET, mlf->entry.path);
+                    }
+                }
+
+                break;
 			case 666:
 				printf("Bye!\n");
 				stop = 0;
@@ -204,24 +222,29 @@ void search_for_a_file()
     while(stop)
     {
         printf("\n");
-        printf("Please insert one keyword to search for: ");
+        printf("Please insert one keyword to search for: \n");
         char file[500];
 
+        printf(ANSI_COLOR_BLUE SPACER ANSI_COLOR_RESET);
         read_line(file, sizeof(file), stdin);
 
-        // TODO: MAKE THE SEARCH
+        
 
-        // char *usermenu_continue[1] = {"Continue"};
-        // int choice = print_user_menu(usermenu_continue, 1);
-        // switch(choice)
-        // {
-        //     case 666:
-        //         stop = 0;
-        //         break;
-        //     default:
-        //         // do nothing, let's continue
-        //         break;
-        // }
+        char *usermenu_continue[1] = {"Continue"};
+        int choice = print_user_menu(usermenu_continue, 1);
+        switch(choice)
+        {
+            case 654:
+                stop = 0;
+                break;
+            case 666:
+                exit(0);
+                break;
+
+            default:
+                // do nothing, let's continue
+                break;
+        }
     }
 }
 
