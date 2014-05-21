@@ -24,7 +24,9 @@ Entry publish(struct sockaddr_in client_addr, int clilen)
 	if((publish_socket = socket(PF_INET, SOCK_DGRAM, 0)) < 0)
 	{
 		perror("Error while setting up the publishing socket\n");
-		exit(EXIT_FAILURE);
+		strcpy(metadataFile.md_name, "ERROR");
+		result.metadata = metadataFile;
+		return result;
 	}
 
 	/*
@@ -38,7 +40,9 @@ Entry publish(struct sockaddr_in client_addr, int clilen)
 	if(bind(publish_socket, (struct sockaddr*) &publish_addr, sizeof(publish_addr)) < 0)
 	{
 		perror("Error while binding the publish port on the server\n");
-		exit(EXIT_FAILURE);
+		strcpy(metadataFile.md_name, "ERROR");
+		result.metadata = metadataFile;
+		return result;
 	}
 
 	/*
@@ -49,7 +53,9 @@ Entry publish(struct sockaddr_in client_addr, int clilen)
 			  (struct sockaddr*) &client_addr, clilen) < 0)
 	{
 		perror("Error while sending the ready response to a publish request\n");
-		exit(EXIT_FAILURE);
+		strcpy(metadataFile.md_name, "ERROR");
+		result.metadata = metadataFile;
+		return result;
 	}
 
 	/*
@@ -59,7 +65,9 @@ Entry publish(struct sockaddr_in client_addr, int clilen)
 				(struct sockaddr *) &client_addr, (socklen_t *) &clilen) < 0)
 	{
 		perror("Error while receiving the metadata file\n");
-		exit(EXIT_FAILURE);
+		strcpy(metadataFile.md_name, "ERROR");
+		result.metadata = metadataFile;
+		return result;
 	}
 
 	/*
@@ -70,7 +78,9 @@ Entry publish(struct sockaddr_in client_addr, int clilen)
 			  (struct sockaddr*) &client_addr, clilen) < 0)
 	{
 		perror("Error while sending the publish ack\n");
-		exit(EXIT_FAILURE);
+		strcpy(metadataFile.md_name, "ERROR");
+		result.metadata = metadataFile;
+		return result;
 	}
 
 	/*
