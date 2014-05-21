@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "usermenu.h"
+#include "constants.h"
 
 /**
  * Safely ask a user's some information.
@@ -16,9 +17,13 @@ int print_user_menu(char **usermenu, int number_of_choices)
 	
 	for(i = 0; i < number_of_choices; i++)
 	{
-		printf("%s[%d] %s\n", SPACER, i, usermenu[i]);
+		printf(ANSI_COLOR_GREEN SPACER ANSI_COLOR_RESET "[%d] %s\n", i, 
+            usermenu[i]);
 	}
-	printf("%s[666] Cancel\n", SPACER);
+    printf(ANSI_COLOR_GREEN SPACER ANSI_COLOR_RESET  
+        ANSI_COLOR_YELLOW "[654] Cancel\n" ANSI_COLOR_RESET);
+    printf(ANSI_COLOR_GREEN SPACER ANSI_COLOR_RESET 
+        ANSI_COLOR_RED "[666] Exit\n" ANSI_COLOR_RESET);
 
 	printf("Your choice: ");
     int choice = get_integer_input();

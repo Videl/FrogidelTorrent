@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS =-Wall
-DEPS = util/metadata.h util/usermenu.h util/constants.h server.h publish.h
-DEPS_O = util/metadata.o util/usermenu.o publish.o
+DEPS = util/metadata.h util/usermenu.h util/constants.h server.h publish.h util/local_file.h
+DEPS_O = util/metadata.o util/usermenu.o publish.o util/local_file.o
 
 OBJMAIN = $(DEPS_O) main.o
 OBJSHARER = $(DEPS_O) sharer.o
@@ -27,3 +27,4 @@ clean:
 	rm -f util/*.o
 	rm -f main
 	rm -f sharer
+	rm -f server

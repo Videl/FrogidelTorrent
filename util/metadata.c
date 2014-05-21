@@ -45,41 +45,48 @@ Metadata *create_metadata_from_path(char pathFile[1000])
 	char *extension;
 	char hash[41];
 
-	/** Name discovery */
-	char *slash = strrchr(pathFile, '/');
-    if (!slash || slash == pathFile) 
-	{
-		file_name = pathFile;
-	}
-    else 
-	{
-		file_name = slash+1;
-	}
+    if (file_exists(pathFile))
+    {
+    	/** Name discovery */
+    	char *slash = strrchr(pathFile, '/');
+        if (!slash || slash == pathFile) 
+    	{
+    		file_name = pathFile;
+    	}
+        else 
+    	{
+    		file_name = slash+1;
+    	}
 
-	/** Extension discovery */
-	char *dot = strrchr(file_name, '.');
-    if (!dot || dot == file_name)
-	{
-		extension = "";
-	}
-    else 
-	{
-		extension = dot+1;
-	}
+    	/** Extension discovery */
+    	char *dot = strrchr(file_name, '.');
+        if (!dot || dot == file_name)
+    	{
+    		extension = "";
+    	}
+        else 
+    	{
+    		extension = dot+1;
+    	}
 
-	/** Keywords discovery */
-	// TODO
-	
-	/** Hash discovery */
-	// TODO
-	// 
-	// First way: use openssl/sha.h and do it manually
-	// Second way (easier): use shell command 'sha1sum' with popen.
-	strcpy(hash, "9bdbaa76cde709f2d0ad1089feb098ce1263208d");
-	hash[40] = '\0';
-	
-	Metadata *md = new_metadata(file_name, extension, "", hash);
-	return md;
+    	/** Keywords discovery */
+    	// TODO
+    	
+    	/** Hash discovery */
+    	// TODO
+    	// 
+    	// First way: use openssl/sha.h and do it manually
+    	// Second way (easier): use shell command 'sha1sum' with popen.
+    	strcpy(hash, "9bdbaa76cde709f2d0ad1089feb098ce1263208d");
+    	hash[40] = '\0';
+    	
+    	Metadata *md = new_metadata(file_name, extension, "", hash);
+    	return md;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 /**
@@ -120,4 +127,16 @@ void add_metadata_to_list()
 void remove_metadata_from_list()
 {
 
+}
+
+
+int file_exists( char * filename)
+{
+    FILE * file = fopen(filename, "r");
+    if (file)
+    {
+        fclose(file);
+        return 1;
+    }
+    return 0;
 }

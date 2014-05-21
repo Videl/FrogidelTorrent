@@ -13,6 +13,7 @@
 #include "util/metadata.h"
 #include "util/usermenu.h"
 #include "util/constants.h"
+#include "util/local_file.h"
 
 void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr);
 void search_for_a_file();
@@ -42,8 +43,8 @@ int main(int argc, char *argv[])
 		printf("\n\n");
 		printf("What would you like to do?\n");
 
-		char *usermenu1[4] = {"Change the central server's address ip.", "Publish a new file.", "Search for a file", "Exit"};
-		int choice = print_user_menu(usermenu1, 4);
+		char *usermenu1[4] = {"Change the central server's address ip.", "Publish a new file.", "Search for a file"};
+		int choice = print_user_menu(usermenu1, 3);
 
 		switch(choice)
 		{
@@ -65,11 +66,11 @@ int main(int argc, char *argv[])
                 search_for_a_file();
 
 				break;
-			case 3:
+			case 666:
 				printf("Bye!\n");
 				stop = 0;
 				break;
-			case 666:
+			case 654:
 				printf("Canceled.\n");
 				break;
 			default:
@@ -97,32 +98,56 @@ void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
 
         read_line(file, sizeof(file), stdin);
 
-        // <<< PUBLISH THE FILE TO SERVER >>>
-        if ((n= sendto (*serverSocket, "PUBLISH", strlen("PUBLISH"), 0, 
-            (struct sockaddr *) &serv_addr, sizeof(serv_addr)
-            )) != strlen("PUBLISH"))
+        LocalFile *fl = file_hotload(file);
+
+        if (fl)
         {
-            perror("No server accross the network! Can't start publishing!");
-            //exit (1);
+            // <<< PUBLISH THE FILE TO SERVER >>>
+            
+            n = sendto(*serverSocket, "PUBLISH", strlen("PUBLISH"), 0, 
+                (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+
+            if (n != strlen("PUBLISH"))
+            {
+                perror("No server accross the network! Can't start publishing!\n");
+                //exit (1);
+            }
+            else
+            {
+
+                // We need the new port
+                struct sockaddr_in publish_server;
+
+                n = recvfrom(*serverSocket, sendbuf, sizeof(sendbuf)-1,0, 
+                    (struct sockaddr *) &publish_server, &len);
+
+                if (n < 0)
+                {
+                    perror("Error when following the publishing protocol.\n");
+                    exit(1);
+                }
+                else
+                {
+                    printf("Received %s !\n.", sendbuf);
+                }
+            }
         }
         else
         {
-            if ((n= recvfrom (*serverSocket, sendbuf, sizeof(sendbuf)-1,0, 
-                (struct sockaddr *) &serv_addr, &len)) < 0 )
-            {
-                printf ("Error when following the publishing protocol.\n");
-                exit(1);
-            }
+            printf("Your file `%s` has not been found.\n", file);
         }
-        printf("Received %s !\n.", sendbuf);
 
         char *usermenu_continue[1] = {"Continue"};
         int choice = print_user_menu(usermenu_continue, 1);
         switch(choice)
         {
-            case 666:
+            case 654:
                 stop = 0;
                 break;
+            case 666:
+                exit(0);
+                break;
+                
             default:
                 // do nothing, let's continue
                 break;
