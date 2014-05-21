@@ -9,8 +9,10 @@
 #include "util/metadata.h"
 #include "util/usermenu.h"
 #include "util/constants.h"
+#include "util/torrent.h"
 #include "server.h"
 #include "publish.h"
+#include "search.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +21,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in client_addr;
 	int clilen = sizeof(client_addr);
-	Entry toPublish;
+	Torrent toPublish;
 
 	// Var
 	int i = 0;
@@ -101,14 +103,14 @@ int main(int argc, char *argv[])
 		//Search handler
 		else if(strcmp(instructions_buffer, "SEARCH") == 0)
 		{
-			
+			search();
 		}
 	}
 
 	return EXIT_SUCCESS;
 }
 
-void addEntry(Entry toAdd, ListEntry* entries[])
+void addEntry(Torrent toAdd, ListEntry* entries[])
 {
 	int i = 0, j = 0, hash = 0;
 	char *temp = NULL;
@@ -122,7 +124,7 @@ void addEntry(Entry toAdd, ListEntry* entries[])
 		exit(EXIT_FAILURE);
 	}
 
-	entryToAdd->entry = toAdd;
+	entryToAdd->torrent = toAdd;
 	entryToAdd->next = NULL;
 
 
