@@ -4,19 +4,21 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include "util/constants.h"
 #include "util/metadata.h"
+#include "util/torrent.h"
 #include "server.h"
 #include "publish.h"
 
-Entry publish(struct sockaddr_in client_addr, int clilen)
+Torrent publish(struct sockaddr_in client_addr, int clilen)
 {
 	int publish_socket = 0;
 	struct sockaddr_in publish_addr;
 	char buffer[100] = "";
 	Metadata metadataFile;
-	Entry result;
+	Torrent result;
 
 	/**
 	* Open the dialog socket
@@ -88,7 +90,7 @@ Entry publish(struct sockaddr_in client_addr, int clilen)
 	*/
 	close(publish_socket);
 
-	result.pair_address = client_addr;
+	inet_ntop(AF_INET, &client_addr, result.pair_address, sizeof(result.pair_address));
 	result.metadata = metadataFile;
 
 	return result;
