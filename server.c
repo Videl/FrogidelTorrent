@@ -88,7 +88,11 @@ int main(int argc, char *argv[])
 		if(strcmp(instructions_buffer, "PUBLISH") == 0)
 		{
 			toPublish = publish(client_addr, clilen);
-			addEntry(toPublish, entries);
+			if(strcmp(toPublish.metadata.md_name, "ERROR") == 0)
+				printf("Fail to PUBLISH data\n");
+			
+			else
+				addEntry(toPublish, entries);
 		}
 
 		//Search handler
