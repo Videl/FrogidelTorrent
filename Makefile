@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS =-Wall
+CFLAGS =-Wall -lm
 DEPS = util/metadata.h util/usermenu.h util/constants.h server.h publish.h
 DEPS_O = util/metadata.o util/usermenu.o publish.o
 

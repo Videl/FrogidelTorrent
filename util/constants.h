@@ -3,7 +3,7 @@
 
 #define PORT_ON_PAIR				4000
 #define PORT_ON_SERV				4001
-#define PUBLISH_PORT_ON_SERV		4002
+//#define PUBLISH_PORT_ON_SERV		4002
 #define INSTRUCTIONS_BUFFER_SIZE	100
 
 #endif

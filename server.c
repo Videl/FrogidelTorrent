@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <signal.h>
+#include <math.h>
 #include "util/metadata.h"
 #include "util/usermenu.h"
 #include "util/constants.h"
@@ -18,10 +19,18 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in client_addr;
 	int clilen = sizeof(client_addr);
-	int fileCounter = 0;
+	Entry toPublish;
 
-	//Metadata files
+	// Var
+	int i = 0;
+
+	// Metadata files
 	ListEntry *entries[100];
+
+	for(i = 0 ; i < 100 ; i++)
+	{
+		entries[i] = NULL;
+	}
 
 	// System variable
 	struct sigaction new, old;
@@ -78,7 +87,8 @@ int main(int argc, char *argv[])
 		//Publish handling
 		if(strcmp(instructions_buffer, "PUBLISH") == 0)
 		{
-			publish(client_addr, clilen, &fileCounter);
+			toPublish = publish(client_addr, clilen);
+			addEntry(toPublish, entries);
 		}
 
 		//Search handler
@@ -88,8 +98,82 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
 	return EXIT_SUCCESS;
+}
+
+void addEntry(Entry toAdd, ListEntry* entries[])
+{
+	int i = 0, j = 0, hash = 0;
+	char *temp = NULL;
+	ListEntry *entryToAdd = NULL;
+	ListEntry *path = NULL;
+
+	entryToAdd = (ListEntry*) malloc(sizeof(ListEntry));
+	if(!entryToAdd)
+	{
+		printf("Error while creating the list entry in memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	entryToAdd->entry = toAdd;
+	entryToAdd->next = NULL;
+
+
+	temp = (char*) malloc(sizeof(char) * (strlen(toAdd.metadata.md_keywords) + 1));
+	if(!temp)
+	{
+		printf("Error while creating the list entry in memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	//Add first keyword
+	i = 0;
+	j = 0;
+	while(toAdd.metadata.md_keywords[i] != '\0')
+	{
+		// Determine the string
+		while(toAdd.metadata.md_keywords[i] != ',' && toAdd.metadata.md_keywords[i] != '\0')
+		{
+			temp[j] = toAdd.metadata.md_keywords[i];
+			i++;
+			j++;
+		}
+
+		// Hash it and add the entry
+		temp[j] = '\0';
+		hash = hashWord(temp, j);
+		if(entries[hash] == NULL)
+			entries[hash] = entryToAdd;
+
+		else
+		{
+			j = 0;
+			path = entries[hash];
+			while(path->next != NULL)
+				path = path->next;
+
+			path->next = entryToAdd;
+		}
+
+		if(toAdd.metadata.md_keywords[i] != '\0')
+		{
+			i++;
+			j = 0;
+		}		
+	}
+
+}
+
+int hashWord(char *word, int length)
+{
+	int i = 0, result = 0;
+
+	for(i = 0 ; i < length ; i++)
+	{
+		result += (int)pow(word[i], length - 1 - i);
+	}
+
+	return result % 100;
 }
 
 void server_interruption(int sig)

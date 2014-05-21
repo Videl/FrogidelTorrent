@@ -4,19 +4,14 @@
 typedef struct Entry
 {
 	/*
-	* Identifier of the project
-	*/
-	int id;
-
-	/*
 	* Pair address
 	*/
-	char pair_address[100];
+	struct sockaddr_in pair_address;
 
 	/*
 	* File metadata
 	*/
-	Metadata medata;
+	Metadata metadata;
 } Entry;
 
 
@@ -33,7 +28,8 @@ typedef struct ListEntry
 	struct ListEntry *next;
 } ListEntry;
 
-
+void addEntry(Entry toAdd, ListEntry *entries[]);
+int hashWord(char *word, int length);
 void server_interruption(int sig);
 
 #endif
