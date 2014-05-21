@@ -18,16 +18,27 @@
 void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr);
 void search_for_a_file();
 void low_energy_server_run();
-void setup_publish_server(struct sockaddr_in *serv_addr, int *serverSocket, char *ip_addr);
+void setup_publish_server(struct sockaddr_in *serv_addr, 
+                          int *serverSocket, 
+                          char *ip_addr);
 
 int main(int argc, char *argv[])
 {
 	char user_addr_server[30];
 	int stop = 1;
+    int i = 0;
 
     /** Network files UDP (Central server) */
     int serverSocket;
     struct sockaddr_in serv_addr;
+
+    /** Hashmap of local files */
+    LocalFile *local_files_list[100];
+
+    for (i = 0; i < 100; i++)
+    {
+        local_files_list[i] = NULL;
+    }
 
 	printf("Welcome! You have launched a pair!\n");
 	printf("Please write the central server's address ip: ");
@@ -128,15 +139,39 @@ void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
                 }
                 else
                 {
-                    printf("Received %s !\n.", sendbuf);
-                    n = sendto(
-                        *serverSocket, 
-                        (void *)(fl->md), 
-                        (size_t) sizeof(*(fl->md)), 
-                        0, 
-                        (struct sockaddr *) &publish_server, 
-                        sizeof(publish_server)
-                    );
+
+                    // printf("Received %s !\n.", sendbuf);
+                    if (strcmp(sendbuf, "PUBLISH_READY"))
+                    {
+                        n = sendto(
+                            *serverSocket, 
+                            (void *)(fl->md), 
+                            (size_t) sizeof(*(fl->md)), 
+                            0, 
+                            (struct sockaddr *) &publish_server, 
+                            sizeof(publish_server)
+                        );
+                        // TODO : test if error.
+
+                        n = recvfrom(
+                            *serverSocket, 
+                            sendbuf, 
+                            sizeof(sendbuf)-1,
+                            0, 
+                            (struct sockaddr *) &publish_server, 
+                            &len
+                        );
+                        // TODO : test if error.
+                        
+                        if (strcmp(sendbuf, "PUBLISH_ACK"))
+                        {
+                            printf("Publishing of file is complete.\n");
+                        }
+                        else
+                        {
+                            printf("Publishing of file is FAILED.\n");
+                        }
+                    }
                 }
             }
         }
