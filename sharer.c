@@ -96,6 +96,7 @@ void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
         socklen_t len = sizeof(serv_addr);
         char sendbuf[1500];
 
+        printf(ANSI_COLOR_BLUE SPACER ANSI_COLOR_RESET);
         read_line(file, sizeof(file), stdin);
 
         LocalFile *fl = file_hotload(file);
@@ -114,7 +115,6 @@ void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
             }
             else
             {
-
                 // We need the new port
                 struct sockaddr_in publish_server;
 
@@ -129,6 +129,14 @@ void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
                 else
                 {
                     printf("Received %s !\n.", sendbuf);
+                    n = sendto(
+                        *serverSocket, 
+                        (void *)(fl->md), 
+                        (size_t) sizeof(*(fl->md)), 
+                        0, 
+                        (struct sockaddr *) &publish_server, 
+                        sizeof(publish_server)
+                    );
                 }
             }
         }
@@ -147,7 +155,7 @@ void publish_new_file(int *serverSocket, struct sockaddr_in serv_addr)
             case 666:
                 exit(0);
                 break;
-                
+
             default:
                 // do nothing, let's continue
                 break;
@@ -189,7 +197,7 @@ void low_energy_server_run()
 
 void setup_publish_server(struct sockaddr_in *serv_addr, int *serverSocket, char *ip_addr)
 {
-    printf("Tried to connect to the server %s.\n", ip_addr);
+    printf("Connecting to server "ANSI_COLOR_CYAN"%s"ANSI_COLOR_RESET"...\n", ip_addr);
 
     memset((char *) serv_addr, 0, sizeof(&serv_addr));
     serv_addr->sin_family = PF_INET;
