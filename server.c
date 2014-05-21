@@ -18,6 +18,10 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in client_addr;
 	int clilen = sizeof(client_addr);
+	int fileCounter = 0;
+
+	//Metadata files
+	ListEntry *entries[100];
 
 	// System variable
 	struct sigaction new, old;
@@ -74,9 +78,10 @@ int main(int argc, char *argv[])
 		//Publish handling
 		if(strcmp(instructions_buffer, "PUBLISH") == 0)
 		{
-			publish(client_addr);
+			publish(client_addr, clilen, &fileCounter);
 		}
 
+		//Search handler
 		else if(strcmp(instructions_buffer, "SEARCH") == 0)
 		{
 
