@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 		//Search handler
 		else if(strcmp(instructions_buffer, "SEARCH") == 0)
 		{
-			search();
+			search(entries);
 		}
 	}
 
