@@ -5,7 +5,6 @@
 #ifndef USERMENU_H
 #define USERMENU_H
 
-#define SPACER          " -> ### "
 #define OK              0
 #define NO_INPUT        1
 #define TOO_LONG        2
