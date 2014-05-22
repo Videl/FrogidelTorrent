@@ -367,7 +367,7 @@ void search_for_a_file(
                                         (struct sockaddr *) &search_server,
                                         &len
                                     );
-                                    printf(ANTISPACER "%s\n", result[i].metadata.md_name);
+                                    printf(ANTISPACER "[%d] %s\n", i + 1, result[i].metadata.md_name);
                                 }
 
                                 // TODO Send bye message to search server

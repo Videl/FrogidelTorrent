@@ -101,7 +101,7 @@ void search(ListEntry *entries[], struct sockaddr_in client_addr, int clilen)
 				result_counter++;
 
 			path = path->next;
-
+			printf("Coucou");
 		} while(path != NULL);
 	}
 

@@ -10,7 +10,7 @@ int hashWord(char *word, int length)
 
 	for(i = 0 ; i < length ; i++)
 	{
-		result += (int)pow(word[i], length - 1 - i);
+		result += word[i];
 	}
 
 	return result % 100;

@@ -149,6 +149,7 @@ void addEntry(Torrent toAdd, ListEntry* entries[])
 			temp[j] = toAdd.metadata.md_keywords[i];
 			i++;
 			j++;
+			printf("%d\t%d\n", i, j);
 		}
 
 		// Hash it and add the entry
@@ -156,6 +157,7 @@ void addEntry(Torrent toAdd, ListEntry* entries[])
 		hash = hashWord(temp, j);
 
 		printf("Added\n");
+		printf("%d\n", hash);
 
 		if(entries[hash] == NULL)
 			entries[hash] = entryToAdd;
@@ -174,7 +176,7 @@ void addEntry(Torrent toAdd, ListEntry* entries[])
 		{
 			i++;
 			j = 0;
-		}		
+		}
 	}
 
 }
