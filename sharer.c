@@ -10,6 +10,7 @@
 #include <sys/timeb.h>
 #include <netdb.h>
 #include <strings.h>
+#include <pthread.h>
 #include "sharer.h"
 #include "util/metadata.h"
 #include "util/usermenu.h"
@@ -22,6 +23,16 @@ int main(int argc, char *argv[])
 	char user_addr_server[30];
 	int stop = 1;
     int i = 0;
+    pthread_t thread_server;
+    int iret;
+
+    iret = pthread_create( &thread_server, NULL, low_energy_server_run, (void*) NULL);
+    if(iret)
+    {
+        fprintf(stderr,"Error - pthread_create() return code: %d\n", iret);
+        exit(EXIT_FAILURE);
+    }
+
 
     /** Network files UDP (Central server) */
     int serverSocket;
@@ -104,6 +115,9 @@ int main(int argc, char *argv[])
 
         fflush(stdin);
 	}
+
+    printf("Exiting, waiting for TCP server to end.\n");
+    pthread_join(thread_server, NULL);
 
 	return EXIT_SUCCESS;
 }
@@ -248,14 +262,14 @@ void search_for_a_file(
         // Begin search
         n = sendto(
             *serverSocket, 
-            "GET", 
-            strlen("GET"), 
+            "SEARCH", 
+            strlen("SEARCH"), 
             0,
             (struct sockaddr *) &serv_addr, 
             sizeof(serv_addr)
         );
 
-        if (n != strlen("GET"))
+        if (n != strlen("SEARCH"))
         {
             perror("No server accross the network! Can't start searching!\n");
             //exit (1);
@@ -273,7 +287,7 @@ void search_for_a_file(
                 &len
             );
 
-            if (n < 0 || strcmp(recv_buffer, "SEAAAARCH") != 0)
+            if (n < 0 || strcmp(recv_buffer, "SEARCH_READY") != 0)
             {
                 perror("Error when following the search protocol: ");
             }
@@ -289,7 +303,7 @@ void search_for_a_file(
                     sizeof(search_server)
                 );
 
-                if (n != strlen("SEAAAARCH"))
+                if (n != strlen(keyword))
                 {
                     perror("No server accross the network! Can't start searching!\n");
                     //exit (1);
@@ -303,7 +317,7 @@ void search_for_a_file(
                     n = recvfrom(
                         *serverSocket, 
                         noData, 
-                        sizeof(noData)-1,
+                        sizeof(noData),
                         0,
                         (struct sockaddr *) &search_server, 
                         &len
@@ -399,7 +413,8 @@ void setup_publish_server(struct sockaddr_in *serv_addr, int *serverSocket, char
 }
 
 
-void low_energy_server_run()
+void *low_energy_server_run(/* void * truc */)
 {
-
+    printf("Coucou, je suis un thread!");
+    while(1) { }
 }
