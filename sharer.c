@@ -186,7 +186,7 @@ void publish_new_file(
                         }
                         else
                         {
-                            printf("Publishing of file is FAILED.\n");
+                            printf("Publishing of file FAILED.\n");
                             printf("Received: %s, %d\n", sendbuf, (int) strlen(sendbuf));
                         }
                     }
@@ -248,11 +248,6 @@ void search_for_a_file()
     }
 }
 
-void low_energy_server_run()
-{
-
-}
-
 void setup_publish_server(struct sockaddr_in *serv_addr, int *serverSocket, char *ip_addr)
 {
     printf("Connecting to server "ANSI_COLOR_CYAN"%s"ANSI_COLOR_RESET"...\n", ip_addr);
@@ -285,4 +280,10 @@ void setup_publish_server(struct sockaddr_in *serv_addr, int *serverSocket, char
         // error("setsockopt failed\n");        
         // Who cares
     }
+}
+
+
+void low_energy_server_run()
+{
+
 }

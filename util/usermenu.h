@@ -13,4 +13,4 @@ int print_user_menu(char **usermenu, int number_of_choices);
 char *read_line (char *buf, size_t length, FILE *f);
 int get_integer_input();
 
-#endif /* METADATA_H */
+#endif /* USERMENU_H */
