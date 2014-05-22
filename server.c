@@ -174,8 +174,40 @@ void addEntry(Torrent toAdd, ListEntry* entries[])
 
 }
 
+
+void server_save_torrents(ListEntry *entries[])
+{
+	FILE *fp = NULL;
+
+
+	fp = fopen("server_torrents", "w");
+	if(!fp)
+	{
+		perror("Error while saving the server torrents\n");
+		exit(EXIT_FAILURE);
+	}
+
+
+
+	fclose(fp);
+}
+
+void server_load_torrents(ListEntry *entries[])
+{
+	FILE *fp = NULL;
+
+	fp = fopen("server_torrents", "r");
+	if(!fp)
+	{
+		perror("Error while loading the server torrents\n");
+		exit(EXIT_FAILURE);
+	}
+}
+
 void server_interruption(int sig)
 {
-	printf("\n\nEnding Frogidel Torrent Server\n");
+	printf("\n\nSaving server torrents\n\n");
+
+	printf("\n\nEnding Frogidel Torrent Server\n\n");
 	exit(EXIT_SUCCESS);
 }

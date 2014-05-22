@@ -50,6 +50,7 @@ char* sha1(char *filename)
 		SHA1_Update(&context, buff, resultRead);
 	} while(resultRead != 0);
 
+	fclose(fp);
 
 	SHA1_Final(temp, &context);
 

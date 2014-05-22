@@ -15,6 +15,7 @@ typedef struct ListEntry
 } ListEntry;
 
 void addEntry(Torrent toAdd, ListEntry *entries[]);
+void server_save_torrents(ListEntry *entries[]);
 void server_interruption(int sig);
 
 #endif
