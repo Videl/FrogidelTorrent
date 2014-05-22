@@ -29,9 +29,6 @@ LocalFile* file_hotload(char *path, char keywords[255])
     }
 }
 
-
-
-
 void addLocalFile(LocalFile toAdd, ListLocalFile* entries[])
 {
     ListLocalFile *entryToAdd = NULL;
@@ -62,4 +59,34 @@ void addLocalFile(LocalFile toAdd, ListLocalFile* entries[])
         }
         path->next = entryToAdd;
     }
+}
+
+LocalFile* searchForSha(char *sha, ListLocalFile* entries[])
+{
+    ListLocalFile *path = NULL;
+    char c = sha[0];
+    int listLookup = (int) strtol(&c, NULL, 16);
+
+    if(entries[listLookup] == NULL)
+    {
+        return NULL;
+    }
+    else
+    {
+        path = entries[listLookup];
+        if(strcmp(path->entry.md->md_hash, sha) == 0)
+        {
+            return path;
+        }
+
+        while(path->next != NULL)
+        {
+            path = path->next;
+            if(strcmp(path->entry.md->md_hash, sha) == 0)
+            {
+                return path;
+            }
+        }
+    }
+    return NULL;
 }

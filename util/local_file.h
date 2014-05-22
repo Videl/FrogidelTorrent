@@ -33,5 +33,6 @@ LocalFile* new_localfile(char *path, Metadata *md);
 LocalFile* file_hotload(char *path, char keywords[255]);
 
 void addLocalFile(LocalFile toAdd, ListLocalFile* entries[]);
+LocalFile* searchForSha(char *sha, ListLocalFile* entries[]);
 
 #endif /* LOCALFILE_H */
