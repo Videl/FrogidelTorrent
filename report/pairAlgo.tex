@@ -1,1 +1,61 @@
 \section{Algorithme d'un pair et structures de données utilisées}
+
+\subsection{Structures de données utilisées}
+
+Sur un pair, nous avons besoin de stocker les fichiers publiés par ce pair sur le serveur. Pour cela, nous utilisons une hashmap contenant des listes chaînées pour gérer 
+les collisions sur une même clef. Cette hashmap contient des éléments typés par la structure \texttt{LocalFile}. Celle-ci contient les métadonnées du fichier (structure
+\texttt{Metadata}) ainsi que son emplacement sur le disque dur (sous la forme d'une chaîne de caractères).
+
+\subsection{Algorithmes}
+
+\noindent \textit{Remarque :} l'ensemble des phases d'attente sont soumises à un timeout. Quand celui-ci expire, un message est affiché à l'utilisateur l'invitant à recommencer l'opération lancée.
+
+\noindent \textbf{Algorithme général}
+
+\begin{enumerate}
+	\item Création d'un thread servant d'écoute TCP (voir algorithme de partage)
+	\item Si l'utilisateur demande à envoyer un fichier, exécution de l'algorithme de publication
+	\item Si l'utilisateur demande à effectuer une recherche, exécution de l'algorithme de recherche
+\end{enumerate}
+
+\noindent \textbf{Algorithme de partage}
+
+\begin{enumerate}
+	\item Création d'une socket d'écoute sur le port \texttt{PORT\_ON\_CLIENT}. Celle-ci est ajoutée à un \texttt{select} ce qui nous permet de gérer plusieurs téléchargements simultanés
+	\item Lors d'une demande de connexion d'un client : on parcourt la liste des fichiers publiés et on récupère la structure de type \texttt{LocalFile} dont le SHA correspond 
+	à celui envoyé par le pair distant.
+	\item On crée une nouvelle de socket de dialogue pour le client, qu'on écoutera via l'instruction \texttt{select}
+	\item Sur cette socket, on commence à envoyer le fichier au fur et à mesure en fonction des limites du protocole TCP
+	\item Lorsque l'envoi est terminé, on ferme la socket et on la retire du \texttt{select}
+\end{enumerate}
+
+\noindent \textbf{Algorithme de publication}
+
+\begin{enumerate}
+	\item Récupération auprès de l'utilisateur du chemin du fichier à envoyer
+	\item Vérification que le fichier existe
+	\item Construction des métadonnées (extension récupérée automatiquement, calcul du SHA sur le contenu du fichier, mots-clefs récupérés par une saisie utilisateur)
+	\item Envoi d'une demande de publication \texttt{PUBLISH} au serveur
+	\item Attente d'une réponse \texttt{PUBLISH\_READY}
+	\item Envoi des métadonnées du fichier au serveur sur le nouveau port d'origine de \texttt{PUBLISH\_READY}
+	\item Attente de l'acquittement \texttt{PUBLISH\_ACK}
+	\item Retour à l'utilisateur
+\end{enumerate}
+
+\noindent \textbf{Algorithme de recherche et de récupération de fichier}
+
+\begin{enumerate}
+	\item Récupération par saisie utilisateur du mot-clef de recherche
+	\item Envoi d'une requête \texttt{SEARCH}
+	\item Attente de réception de la réponse \texttt{SEARCH\_READY}
+	\item Envoi du mot-clef de recherche au serveur sur le port d'origine de la réponse \texttt{SEARCH\_READY}
+	\item Attente de réception du nombre de résultats trouvés
+	\item Si celui-ci est différent de 0 :
+		\begin{enumerate}
+			\item Attente de réception de chaque résultat
+			\item S'il manque un résultat, afficher un message d'erreur et inviter l'utilisateur à recommencer sa requête
+		\end{enumerate}
+	\item Si l'utilisateur choisit de télécharger un fichier en réponse de cette recherche, nous envoyons un \texttt{GET sha(fichier)} au pair dont l'adresse 
+	est contenue dans le résultat de la requête. Le téléchargement se met alors en marche et lorsqu'on reçoit le signal de fin de fichier, nous fermons 
+	la connexion.
+\end{enumerate}
