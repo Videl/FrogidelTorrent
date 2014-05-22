@@ -1,1 +1,50 @@
 \section{Algorithme du serveur et structures de données utilisées}
+\label{algoServ}
+
+\subsection{Structures de données utilisées}
+Pour stocker les informations sur le serveur, nous utilisons une hashmap constituée à l'intérieur de listes chaînées pour gérer les collisions. La hashmap utilise comme 
+clef un hashage sur les mots-clefs associés à un fichier.
+
+Lorsqu'un pair envoie un fichier au serveur, pour chaque mot-clef de recherche, on réalise le hashage et on range 
+les métadonnées avec l'adresse IP du pair dans la liste chainée correspondant à l'entrée de la hashmap. On utilise pour cela une structure appelée \texttt{Torrent} qui contient 
+les métadonnées envoyées par le client et l'adresse IP du pair obtenue via le code.
+
+
+\subsection{Algorithmes}
+\noindent \textbf{Algorithme général du serveur :}
+
+\begin{enumerate}
+	\item Ouverture de la connexion UDP sur \texttt{PORT\_ON\_SERV}
+	\item Attente de connexion
+	\item Si on reçoit une requête \texttt{PUBLISH} : exécution de l'algorithme de publication
+	\item Si on reçoit une requête \texttt{SEARCH} : exécution de l'algorithme de recherche
+\end{enumerate}
+
+\noindent \textbf{Algorithme de publication}
+
+\begin{enumerate}
+	\item Réponse \texttt{PUBLISH\_READY} au client depuis un autre port généré par le système (pour ne pas gêner l'écoute UDP)
+	\item Réception des métadonnées du client
+	\item Envoi de l'acquittement \texttt{PUBLISH\_ACK}
+	\item Pour chaque mot-clef de recherche des métadonnées :
+		\begin{enumerate}
+			\item Hash du mot-clef
+			\item Ajout des métadonnées et de l'adresse IP du pair (sous la forme d'une structure \texttt{Torrent}) à la liste contenue dans l'entrée de la hashmap correspondant au hash du mot-clef
+		\end{enumerate}
+\end{enumerate}
+
+
+\noindent \textbf{Algorithme de recherche}
+
+\begin{enumerate}
+	\item Réponse \texttt{SEARCH\_READY} au client depuis un autre port généré par le système (pour ne pas gêner l'écoute UDP)
+	\item Réception du mot-clef de recherche du client
+	\item Hash de mot-clef
+	\item Parcours de la liste contenue à \texttt{hashmap[hash\_keyword]} : pour chaque entrée, si le mot-clef est contenu dans les tags des métadonnées, incrémenter le compteur de résultats
+	\item Envoi du nombre de résultats au client
+	\item Si le nombre de résultats est différent de 0 :
+		\begin{enumerate}
+			\item Se repositionner sur la liste à \texttt{hasmap[hash\_keyword]}
+			\item La parcourir en envoyant au client chaque entrée où le mot-clef est contenu dans les tags de la métadonnée.
+		\end{enumerate}
+\end{enumerate}
