@@ -21,7 +21,7 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
 	Torrent result;
 
 	struct timeval timeout;      
-    timeout.tv_sec = 5;
+    timeout.tv_sec = 20;
     timeout.tv_usec = 0;
 
 	/**
@@ -35,7 +35,7 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
 		return result;
 	}
 
-	if(setsockopt(publish_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+	/*if(setsockopt(publish_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
                 sizeof(timeout)) < 0)
     {
         // error("setsockopt failed\n");        
@@ -47,7 +47,7 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
     {
         // error("setsockopt failed\n");        
         // Who cares
-    }
+    }*/
 
 	/*
 	* Setting up the dialog address

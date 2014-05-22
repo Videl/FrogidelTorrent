@@ -133,6 +133,7 @@ void publish_new_file(
         printf("\n\n");
         printf("Please insert the file's absolute path:\n");
         char file[500];
+        char keywords[255];
         int n;
         socklen_t len = sizeof(serv_addr);
         char sendbuf[1500];
@@ -175,7 +176,6 @@ void publish_new_file(
                 }
                 else
                 {
-
                     // printf("Received %s !\n.", sendbuf);
                     if (strcmp(sendbuf, "PUBLISH_READY") == 0)
                     {
