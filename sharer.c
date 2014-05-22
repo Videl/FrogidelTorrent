@@ -536,6 +536,8 @@ void download_file(Torrent *results, int no_result)
             // fill up buffer, so we
             // store how many bytes were actually read in bytes_read.
             int bytes_read = read(dialogSocket, buffer, sizeof(buffer));
+            printf("Read %d bytes.\n", bytes_read);
+
             if (bytes_read == 0) // We're done reading from the file
                 break;
 
@@ -705,7 +707,7 @@ void *low_energy_server_run(void * list)
                         void *p = buffer;
                         while (bytes_read > 0) 
                         {
-                            int bytes_written = write(sockcli, p, bytes_read);
+                            int bytes_written = send(sockcli, p, bytes_read, 0);
                             if (bytes_written <= 0) 
                             {
                                 // handle errors
