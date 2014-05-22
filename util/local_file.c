@@ -61,11 +61,18 @@ void addLocalFile(LocalFile toAdd, ListLocalFile* entries[])
     }
 }
 
-LocalFile* searchForSha(char *sha, ListLocalFile* entries[])
+LocalFile* searchForSha(char *sha, ListLocalFile** entries)
 {
     ListLocalFile *path = NULL;
     char c = sha[0];
     int listLookup = (int) strtol(&c, NULL, 16);
+    printf("AAA\n");
+
+    if(entries == NULL)
+    {
+        printf("T'es nul Pierre\n");
+        return NULL;
+    }
 
     if(entries[listLookup] == NULL)
     {
@@ -74,19 +81,22 @@ LocalFile* searchForSha(char *sha, ListLocalFile* entries[])
     else
     {
         path = entries[listLookup];
+        printf("%s\n", path->entry.md->md_hash);
         if(strcmp(path->entry.md->md_hash, sha) == 0)
         {
-            return path;
+            return &(path->entry);
         }
 
         while(path->next != NULL)
         {
             path = path->next;
+            // printf("%s\n", path->entry.md->md_hash);
             if(strcmp(path->entry.md->md_hash, sha) == 0)
             {
-                return path;
+                return &(path->entry);
             }
         }
     }
+
     return NULL;
 }

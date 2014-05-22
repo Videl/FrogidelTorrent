@@ -34,7 +34,13 @@ int main(int argc, char *argv[])
     /** Hashmap of local files */
     ListLocalFile *local_files_list[16];
 
-    iret = pthread_create(&thread_server, NULL, low_energy_server_run, (void*) NULL);
+    iret = pthread_create(
+        &thread_server, 
+        NULL, 
+        low_energy_server_run, 
+        (void*) local_files_list
+    );
+
     if(iret)
     {
         fprintf(stderr,"Error - pthread_create() return code: %d\n", iret);
@@ -263,6 +269,9 @@ void search_for_a_file(
         int i = 0;
         int n;
         socklen_t len = sizeof(serv_addr);
+        // Receive the number of results
+        int loops = 0;
+        Torrent *result;
 
         printf(ANSI_COLOR_BLUE SPACER ANSI_COLOR_RESET);
         read_line(keyword, sizeof(keyword), stdin);
@@ -328,10 +337,6 @@ void search_for_a_file(
                     }
                     else
                     {
-                        // Receive the number of results
-                        char noData[20];
-                        int loops = 0;
-
                         n = recvfrom(
                             *serverSocket, 
                             &loops, 
@@ -348,8 +353,7 @@ void search_for_a_file(
                         else
                         {
                             // Prepare a loop with as much loops as needed
-                            Torrent *result = 
-                                malloc(loops*sizeof(Torrent));
+                            result = malloc(loops*sizeof(Torrent));
                             if(result == NULL)
                             {
                                 printf("Error when allocating memory for the search result. Exiting.\n");
@@ -367,31 +371,55 @@ void search_for_a_file(
                                         (struct sockaddr *) &search_server,
                                         &len
                                     ); 
-                                    printf(ANSI_COLOR_CYAN ANTISPACER "[%d] %s\n" ANSI_COLOR_RESET, i + 1, result[i].metadata.md_name);
+                                    printf(ANSI_COLOR_CYAN ANTISPACER "%s\n" ANSI_COLOR_RESET, result[i].metadata.md_name);
                                 }
-
-                                // TODO Send bye message to search server
-                            }       
+                            }
                         }
                     }
                 }
             }
         }
-        
-        char *usermenu_continue[1] = {"Continue"};
-        int choice = print_user_menu(usermenu_continue, 1);
-        switch(choice)
-        {
-            case 654:
-                stop = 0;
-                break;
-            case 666:
-                exit(0);
-                break;
 
-            default:
-                // do nothing, let's continue
-                break;
+        if(loops > 0)
+        {
+            char *usermenu_continue[2] = {"Download a file", "New search"};
+            int choice = print_user_menu(usermenu_continue, 2);
+            switch(choice)
+            {
+                case 654:
+                    stop = 0;
+                    break;
+                case 666:
+                    exit(0);
+                    break;
+                case 0:
+                    download_file(result, loops);
+                    break;
+                default:
+                    // cleaning then let's continue
+                    free(result); 
+                    loops = 0;
+
+                    break;
+            }
+        }
+        else
+        {
+            char *usermenu_continue[1] = {"Continue"};
+            int choice = print_user_menu(usermenu_continue, 1);
+            switch(choice)
+            {
+                case 654:
+                    stop = 0;
+                    break;
+                case 666:
+                    exit(0);
+                    break;
+
+                default:
+                    // do nothing, let's continue
+                    break;
+            }
         }
     }
 }
@@ -427,6 +455,114 @@ void setup_publish_server(struct sockaddr_in *serv_addr, int *serverSocket, char
     {
         // error("setsockopt failed\n");        
         // Who cares
+    }
+}
+
+
+void download_file(Torrent *results, int no_result)
+{
+    int i = 0;
+
+    for(i = 0; i < no_result; i++)
+    {
+
+        printf(ANSI_COLOR_CYAN ANTISPACER "[%d] %s\n" ANSI_COLOR_RESET, i, results[i].metadata.md_name);
+    }
+
+    printf("Choose which file to download: ");
+    int choice = get_integer_input();
+
+    printf(ANSI_COLOR_RED SPACER "STARTING DOWNLOAD of %s ### <-" ANSI_COLOR_RESET, results[choice].metadata.md_name);
+    printf("\n");
+
+    int dialogSocket = 0;
+    //int clilen = 0;
+    struct sockaddr_in serv_addr;
+    char *welcomeMessage = "Hello world!\n";
+    //char clientBuffer[100];
+    char serverBuffer[100];
+    memset(&serverBuffer, 0, sizeof(serverBuffer));
+    strcpy(serverBuffer, welcomeMessage);
+
+
+    // Distant address set to the socket
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_port = htons(PORT_ON_PAIR);
+    serv_addr.sin_addr.s_addr = inet_addr(results[choice].pair_address);
+    //inet_ntop(AF_INET, results[choice].pair_address, &serv_addr);
+    
+    dialogSocket = socket(PF_INET, SOCK_STREAM, 0);
+
+    if(dialogSocket < 0)
+    {
+        perror("Error while opening the listening socket\n");
+        exit(EXIT_FAILURE);
+    }
+    {
+
+        struct timeval timeout;      
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+
+        if (setsockopt (dialogSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+                    sizeof(timeout)) < 0)
+        {
+            // error("setsockopt failed\n");        
+            // Who cares
+        }
+
+        if (setsockopt (dialogSocket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+                    sizeof(timeout)) < 0)
+        {
+            // error("setsockopt failed\n");        
+            // Who cares
+        }
+
+        char request[46];
+        sprintf(request, "GET %s", results[choice].metadata.md_hash);
+        send(dialogSocket, request, strlen(request), 0);
+
+        char buffer[8192];
+        FILE *input_file = fopen(results[choice].metadata.md_name, "a");
+
+        while (1)
+        {
+            // Read data into buffer.  We may not have enough to 
+            // fill up buffer, so we
+            // store how many bytes were actually read in bytes_read.
+            int bytes_read = read(
+                dialogSocket, 
+                buffer, 
+                sizeof(buffer)
+            );
+            if (bytes_read == 0) // We're done reading from the file
+                break;
+
+            if (bytes_read < 0) {
+                // handle errors
+            }
+
+            // You need a loop for the write, because not all of 
+            // the data may be written
+            // in one call; write will return how many bytes 
+            // were written. p keeps
+            // track of where in the buffer we are, while we 
+            // decrement bytes_read
+            // to keep track of how many bytes are left to write.
+            void *p = buffer;
+            while (bytes_read > 0) 
+            {
+                int bytes_written = write(fileno(input_file), p, bytes_read);
+                if (bytes_written <= 0) 
+                {
+                    // handle errors
+                }
+                bytes_read -= bytes_written;
+                p += bytes_written;
+            }
+        }
+
+        fclose(input_file);
     }
 }
 
@@ -533,7 +669,52 @@ void *low_energy_server_run(void * list)
 
                 /* Look for file and send it! */
                 LocalFile* data = searchForSha(sha, localfiles);
-                printf("File path: %s\n", data->md->md_name);
+                if(data != NULL)
+                {
+                    // Sending the file
+                    // printf("File path: %s\n", data->md->md_name);
+                    char buffer[8192];
+                    FILE *input_file = fopen(data->md->md_name, "rb");
+
+                    while (1)
+                    {
+                        // Read data into buffer.  We may not have enough to 
+                        // fill up buffer, so we
+                        // store how many bytes were actually read in bytes_read.
+                        int bytes_read = read(
+                            fileno(input_file), 
+                            buffer, 
+                            sizeof(buffer)
+                        );
+                        if (bytes_read == 0) // We're done reading from the file
+                            break;
+
+                        if (bytes_read < 0) {
+                            // handle errors
+                        }
+
+                        // You need a loop for the write, because not all of 
+                        // the data may be written
+                        // in one call; write will return how many bytes 
+                        // were written. p keeps
+                        // track of where in the buffer we are, while we 
+                        // decrement bytes_read
+                        // to keep track of how many bytes are left to write.
+                        void *p = buffer;
+                        while (bytes_read > 0) 
+                        {
+                            int bytes_written = write(sockcli, p, bytes_read);
+                            if (bytes_written <= 0) 
+                            {
+                                // handle errors
+                            }
+                            bytes_read -= bytes_written;
+                            p += bytes_written;
+                        }
+                    }
+
+                    fclose(input_file);
+                }
 
                 if (datasent == 0)
                 {
