@@ -11,6 +11,7 @@
 #include <netdb.h>
 #include <strings.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "sharer.h"
 #include "util/metadata.h"
 #include "util/usermenu.h"
@@ -26,20 +27,19 @@ int main(int argc, char *argv[])
     pthread_t thread_server;
     int iret;
 
-    iret = pthread_create( &thread_server, NULL, low_energy_server_run, (void*) NULL);
-    if(iret)
-    {
-        fprintf(stderr,"Error - pthread_create() return code: %d\n", iret);
-        exit(EXIT_FAILURE);
-    }
-
-
     /** Network files UDP (Central server) */
     int serverSocket;
     struct sockaddr_in serv_addr;
 
     /** Hashmap of local files */
     ListLocalFile *local_files_list[16];
+
+    iret = pthread_create(&thread_server, NULL, low_energy_server_run, (void*) NULL);
+    if(iret)
+    {
+        fprintf(stderr,"Error - pthread_create() return code: %d\n", iret);
+        exit(EXIT_FAILURE);
+    }
 
     for (i = 0; i < 16; i++)
     {
@@ -412,9 +412,123 @@ void setup_publish_server(struct sockaddr_in *serv_addr, int *serverSocket, char
     }
 }
 
-
-void *low_energy_server_run(/* void * truc */)
+void *low_energy_server_run(void * list)
 {
-    printf("Coucou, je suis un thread!");
-    while(1) { }
+    printf("\n");
+    printf("LOW ENERGY SERVER BOOTING!!!\n");
+    printf("\n");
+    ListLocalFile **localfiles = (ListLocalFile**) list;
+
+    int sockfd, newsockfd;
+    struct sockaddr_in  low_energy_serv_addr, cli_addr;
+    socklen_t low_energy_clilen;
+    int tab_clients[FD_SETSIZE];
+    fd_set rset, pset;
+    int maxfdp1, nbfd, i, sockcli, datasent;
+    char msg[45];
+    for(i = 0; i < FD_SETSIZE; i++)
+    {
+        tab_clients[i] = -1;
+    }
+
+    if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) <0) {
+        perror("Socket creating error.\n");
+        exit(2);
+    }
+    maxfdp1 = sockfd + 1;
+
+    FD_ZERO(&rset);
+    FD_ZERO(&pset);
+    FD_SET(sockfd, &rset);
+
+    memset((char*) &low_energy_serv_addr,0, sizeof(low_energy_serv_addr));
+    low_energy_serv_addr.sin_family = PF_INET;
+    low_energy_serv_addr.sin_addr.s_addr = htonl (INADDR_ANY);
+    low_energy_serv_addr.sin_port = htons(PORT_ON_PAIR);
+
+    if (bind(sockfd,(struct sockaddr *)&low_energy_serv_addr, sizeof(low_energy_serv_addr) ) <0) {
+        perror ("File sharer server problem (bind): ");
+        exit (1);
+    }
+
+    /* Paramètrer le nombre de connexion "pending" */
+    if (listen(sockfd, SOMAXCONN) <0) {
+        perror ("File sharer server problem (listen): ");
+        exit (1);
+    }
+
+    while (1) 
+    {
+        pset = rset; // ou FD_CPY(&rset, &pset);
+        nbfd = select(maxfdp1, &pset, NULL, NULL, NULL);
+
+        if(FD_ISSET(sockfd, &pset))
+        {
+            //printf("New connection.\n");
+
+            low_energy_clilen = sizeof(cli_addr);
+            newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,  &low_energy_clilen);
+            if (newsockfd < 0) {
+                perror("File sharer server problem (accept): ");
+                exit (1);
+            }
+
+            // Recherche de la place libre
+            i = 0;
+            while( (i < FD_SETSIZE) && (tab_clients[i] >= 0)) i++;
+            if (i == FD_SETSIZE) 
+            {
+                perror("File sharer server problem (No room for client):");
+                exit(1);
+            }
+
+            // Adds the new client in the tab.
+            tab_clients[i] = newsockfd;
+            FD_SET(newsockfd, &rset);
+
+            if(newsockfd >= maxfdp1)
+            {
+                maxfdp1 = newsockfd + 1;
+                printf("Client accepted.\n");
+            }
+            nbfd--;
+        }
+
+        i = 0;
+        while ((nbfd > 0) && (i < FD_SETSIZE))
+        {
+            if(((sockcli = tab_clients[i]) >= 0) && (FD_ISSET(sockcli, &pset)))
+            {
+                memset( (char*) msg, 0, sizeof(msg) );
+                if ((datasent = read(sockcli, msg, sizeof(msg)-1)) < 0)  {
+                    perror ("<<< ERROR RECEIVING DATA >>>");
+                    exit (3);
+                }
+                msg[datasent] = '\0';
+
+                /* Parse msg to get the SHA */
+                char sha[41];
+                int j = 0;
+                while(msg[j++] != ' ') strcpy(sha, &msg[j+1]);
+                sha[40] = '\0';
+                // printf("SHA (%d): '%s'\n", nbfd, sha);
+
+                /* Look for file and send it! */
+                LocalFile* data = searchForSha(sha, localfiles);
+                printf("File path: %s\n", data->md->md_name);
+
+                if (datasent == 0)
+                {
+                    printf("Déconnexion\n");
+                    FD_CLR(sockcli, &rset);
+                    close(sockcli);
+                    tab_clients[i] = -1;
+                }
+                nbfd--;
+            }
+            i++;
+        }
+    }
+
+    close(sockfd);  
 }
