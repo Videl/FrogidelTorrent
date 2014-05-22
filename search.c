@@ -16,7 +16,7 @@ void search(ListEntry *entries[], struct sockaddr_in client_addr, int clilen)
 	int search_socket = 0;
 	struct sockaddr_in search_addr;
 	char buffer[255] = "";
-	int result_counter = 0, hash = 0;
+	int result_counter = 0, hash = 0, n = 0;
 	ListEntry *path;
 
 	struct timeval timeout;      
@@ -76,8 +76,8 @@ void search(ListEntry *entries[], struct sockaddr_in client_addr, int clilen)
 	/*
 	* Receiving the search keyword from client
 	*/
-	if(recvfrom(search_socket, buffer, (size_t) sizeof(buffer), 0,
-				(struct sockaddr*) &client_addr, (socklen_t *) &clilen)  < 0)
+	if((n = recvfrom(search_socket, buffer, (size_t) sizeof(buffer), 0,
+				(struct sockaddr*) &client_addr, (socklen_t *) &clilen))  <= 0)
 	{
 		perror("Error while receiving the search keyword from the client\n");
 		close(search_socket);
@@ -87,6 +87,9 @@ void search(ListEntry *entries[], struct sockaddr_in client_addr, int clilen)
 	/*
 	* Do the searching
 	*/
+	buffer[n] = '\0';
+
+	printf("Looking for %s...\n", buffer);
 	hash = hashWord(buffer, strlen(buffer));
 	if(entries[hash] != NULL)
 	{
@@ -110,6 +113,7 @@ void search(ListEntry *entries[], struct sockaddr_in client_addr, int clilen)
 	/*
 	* Send the number
 	*/
+	printf("%d results!\n", result_counter);
 	if(sendto(search_socket, &result_counter, (size_t) sizeof(result_counter), 0,
 			  (struct sockaddr*) &client_addr, clilen) < 0)
 	{

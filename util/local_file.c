@@ -15,9 +15,9 @@ LocalFile* new_localfile(char *path, Metadata *md)
     return lf;
 }
 
-LocalFile* file_hotload(char *path)
+LocalFile* file_hotload(char *path, char keywords[255])
 {
-    Metadata *md = create_metadata_from_path(path);
+    Metadata *md = create_metadata_from_path(path, keywords);
     if (md)
     {
         LocalFile *lf = new_localfile(path, md);

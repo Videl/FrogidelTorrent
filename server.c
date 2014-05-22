@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	int listening_socket = 0;
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in client_addr;
-	int clilen = sizeof(client_addr);
+	int clilen = sizeof(client_addr), n = 0;
 	Torrent toPublish;
 
 	// Var
@@ -80,12 +80,14 @@ int main(int argc, char *argv[])
 	*/
 	while(1)
 	{
-		if(recvfrom(listening_socket, instructions_buffer, (size_t) INSTRUCTIONS_BUFFER_SIZE,
-					0, (struct sockaddr *)&client_addr, (socklen_t *) &clilen) < 0)
+		if((n = recvfrom(listening_socket, instructions_buffer, (size_t) INSTRUCTIONS_BUFFER_SIZE,
+					0, (struct sockaddr *)&client_addr, (socklen_t *) &clilen)) < 0)
 		{
 			perror("Error while receiving on the listening socket\n");
 			exit(EXIT_FAILURE);
 		}
+
+		instructions_buffer[n] = '\0';
 
 		//Publish handling
 		if(strcmp(instructions_buffer, "PUBLISH") == 0)
@@ -152,6 +154,9 @@ void addEntry(Torrent toAdd, ListEntry* entries[])
 		// Hash it and add the entry
 		temp[j] = '\0';
 		hash = hashWord(temp, j);
+
+		printf("Added\n");
+
 		if(entries[hash] == NULL)
 			entries[hash] = entryToAdd;
 
