@@ -10,6 +10,7 @@
 #include "util/usermenu.h"
 #include "util/constants.h"
 #include "util/torrent.h"
+#include "util/hash.h"
 #include "server.h"
 #include "publish.h"
 #include "search.h"
@@ -103,7 +104,7 @@ int main(int argc, char *argv[])
 		//Search handler
 		else if(strcmp(instructions_buffer, "SEARCH") == 0)
 		{
-			search(entries);
+			search(entries, client_addr, clilen);
 		}
 	}
 
@@ -171,18 +172,6 @@ void addEntry(Torrent toAdd, ListEntry* entries[])
 		}		
 	}
 
-}
-
-int hashWord(char *word, int length)
-{
-	int i = 0, result = 0;
-
-	for(i = 0 ; i < length ; i++)
-	{
-		result += (int)pow(word[i], length - 1 - i);
-	}
-
-	return result % 100;
 }
 
 void server_interruption(int sig)

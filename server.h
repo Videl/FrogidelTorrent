@@ -15,7 +15,6 @@ typedef struct ListEntry
 } ListEntry;
 
 void addEntry(Torrent toAdd, ListEntry *entries[]);
-int hashWord(char *word, int length);
 void server_interruption(int sig);
 
 #endif
