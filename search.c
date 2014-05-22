@@ -8,8 +8,8 @@
 #include <unistd.h>
 #include "util/metadata.h"
 #include "util/torrent.h"
-#include "server.h"
 #include "util/hash.h"
+#include "server.h"
 
 void search(ListEntry *entries[], struct sockaddr_in client_addr, int clilen)
 {

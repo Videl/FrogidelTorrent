@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-	sha1("/home/frog/Documents/TELECOM_Nancy/FrogidelTorrent/main.c");
+	//sha1("/home/frog/Documents/TELECOM_Nancy/FrogidelTorrent/main.c");
 
 	return 0;
 }

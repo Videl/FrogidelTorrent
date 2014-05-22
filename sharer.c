@@ -176,6 +176,9 @@ void publish_new_file(
                 }
                 else
                 {
+
+                    sendbuf[n] = '\0';
+
                     // printf("Received %s !\n.", sendbuf);
                     if (strcmp(sendbuf, "PUBLISH_READY") == 0)
                     {
@@ -210,6 +213,11 @@ void publish_new_file(
                             printf("Publishing of file FAILED.\n");
                             printf("Received: %s, %d\n", sendbuf, (int) strlen(sendbuf));
                         }
+                    }
+
+                    else
+                    {
+                        perror("Error when following the publishing protocol.\n");
                     }
                 }
             }

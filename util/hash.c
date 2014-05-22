@@ -16,7 +16,7 @@ int hashWord(char *word, int length)
 	return result % 100;
 }
 
-char* sha1(char *filename)
+char* sha1_on_file(char *filename)
 {
 	FILE *fp = NULL;
 	unsigned char temp[SHA_DIGEST_LENGTH];
@@ -49,6 +49,7 @@ char* sha1(char *filename)
 		resultRead = fread(buff, sizeof(char), 32768, fp);
 		SHA1_Update(&context, buff, resultRead);
 	} while(resultRead != 0);
+
 
 	fclose(fp);
 
