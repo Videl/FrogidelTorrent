@@ -475,14 +475,12 @@ void download_file(Torrent *results, int no_result)
     printf(ANSI_COLOR_RED SPACER "STARTING DOWNLOAD of %s ### <-" ANSI_COLOR_RESET, results[choice].metadata.md_name);
     printf("\n");
 
+    printf("DDD\n");
     int dialogSocket = 0;
     //int clilen = 0;
     struct sockaddr_in serv_addr;
-    char *welcomeMessage = "Hello world!\n";
-    //char clientBuffer[100];
-    char serverBuffer[100];
-    memset(&serverBuffer, 0, sizeof(serverBuffer));
-    strcpy(serverBuffer, welcomeMessage);
+
+    printf("EEE\n");
 
 
     // Distant address set to the socket
@@ -491,15 +489,16 @@ void download_file(Torrent *results, int no_result)
     serv_addr.sin_addr.s_addr = inet_addr(results[choice].pair_address);
     //inet_ntop(AF_INET, results[choice].pair_address, &serv_addr);
     
+    printf("AAA\n");
     dialogSocket = socket(PF_INET, SOCK_STREAM, 0);
-
+printf("BBB\n");  
     if(dialogSocket < 0)
     {
         perror("Error while opening the listening socket\n");
         exit(EXIT_FAILURE);
     }
     {
-
+printf("CCC\n");
         struct timeval timeout;      
         timeout.tv_sec = 5;
         timeout.tv_usec = 0;
@@ -516,15 +515,25 @@ void download_file(Torrent *results, int no_result)
         {
             // error("setsockopt failed\n");        
             // Who cares
-        }
+        }printf("FFF\n");
 
         char request[46];
         sprintf(request, "GET %s", results[choice].metadata.md_hash);
-        send(dialogSocket, request, strlen(request), 0);
-
+        printf("FFFA\n");
+        sendto(
+            dialogSocket, 
+            request, 
+            strlen(request), 
+            0, 
+            (struct sockaddr *) &serv_addr,
+            sizeof(serv_addr)
+        );
+printf("FFFB\n");
+        printf("GGG\n");
+        printf("Creating file %s.\n", results[choice].metadata.md_name);
         char buffer[8192];
         FILE *input_file = fopen(results[choice].metadata.md_name, "a");
-
+printf("HHH\n");
         while (1)
         {
             // Read data into buffer.  We may not have enough to 
@@ -563,14 +572,15 @@ void download_file(Torrent *results, int no_result)
         }
 
         fclose(input_file);
+        printf("Closing file %s.\n", results[choice].metadata.md_name);
     }
 }
 
 void *low_energy_server_run(void * list)
 {
-    printf("\n");
-    printf("LOW ENERGY SERVER BOOTING!!!\n");
-    printf("\n");
+    // printf("\n");
+    // printf("LOW ENERGY SERVER BOOTING!!!\n");
+    // printf("\n");
     ListLocalFile **localfiles = (ListLocalFile**) list;
 
     int sockfd, newsockfd;
