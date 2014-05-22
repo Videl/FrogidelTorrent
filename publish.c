@@ -20,10 +20,6 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
 	Metadata metadataFile;
 	Torrent result;
 
-	struct timeval timeout;      
-    timeout.tv_sec = 20;
-    timeout.tv_usec = 0;
-
 	/**
 	* Open the dialog socket
 	*/
@@ -34,20 +30,6 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
 		result.metadata = metadataFile;
 		return result;
 	}
-
-	/*if(setsockopt(publish_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
-                sizeof(timeout)) < 0)
-    {
-        // error("setsockopt failed\n");        
-        // Who cares
-    }
-
-    if(setsockopt(publish_socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
-                sizeof(timeout)) < 0)
-    {
-        // error("setsockopt failed\n");        
-        // Who cares
-    }*/
 
 	/*
 	* Setting up the dialog address
@@ -62,7 +44,6 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
 		perror("Error while binding the publish port on the server\n");
 		strcpy(metadataFile.md_name, "ERROR");
 		result.metadata = metadataFile;
-		close(publish_socket);
 		return result;
 	}
 
@@ -76,7 +57,6 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
 		perror("Error while sending the ready response to a publish request\n");
 		strcpy(metadataFile.md_name, "ERROR");
 		result.metadata = metadataFile;
-		close(publish_socket);
 		return result;
 	}
 
@@ -89,7 +69,6 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
 		perror("Error while receiving the metadata file\n");
 		strcpy(metadataFile.md_name, "ERROR");
 		result.metadata = metadataFile;
-		close(publish_socket);
 		return result;
 	}
 
@@ -103,7 +82,6 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
 		perror("Error while sending the publish ack\n");
 		strcpy(metadataFile.md_name, "ERROR");
 		result.metadata = metadataFile;
-		close(publish_socket);
 		return result;
 	}
 

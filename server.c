@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	int listening_socket = 0;
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in client_addr;
-	int clilen = sizeof(client_addr);
+	int clilen = sizeof(client_addr), n = 0;
 	Torrent toPublish;
 
 	// Var
@@ -80,12 +80,14 @@ int main(int argc, char *argv[])
 	*/
 	while(1)
 	{
-		if(recvfrom(listening_socket, instructions_buffer, (size_t) INSTRUCTIONS_BUFFER_SIZE,
-					0, (struct sockaddr *)&client_addr, (socklen_t *) &clilen) < 0)
+		if((n = recvfrom(listening_socket, instructions_buffer, (size_t) INSTRUCTIONS_BUFFER_SIZE,
+					0, (struct sockaddr *)&client_addr, (socklen_t *) &clilen)) < 0)
 		{
 			perror("Error while receiving on the listening socket\n");
 			exit(EXIT_FAILURE);
 		}
+
+		instructions_buffer[n] = '\0';
 
 		//Publish handling
 		if(strcmp(instructions_buffer, "PUBLISH") == 0)
@@ -147,11 +149,16 @@ void addEntry(Torrent toAdd, ListEntry* entries[])
 			temp[j] = toAdd.metadata.md_keywords[i];
 			i++;
 			j++;
+			printf("%d\t%d\n", i, j);
 		}
 
 		// Hash it and add the entry
 		temp[j] = '\0';
 		hash = hashWord(temp, j);
+
+		printf("Added\n");
+		printf("%d\n", hash);
+
 		if(entries[hash] == NULL)
 			entries[hash] = entryToAdd;
 
@@ -169,13 +176,45 @@ void addEntry(Torrent toAdd, ListEntry* entries[])
 		{
 			i++;
 			j = 0;
-		}		
+		}
 	}
 
 }
 
+
+void server_save_torrents(ListEntry *entries[])
+{
+	FILE *fp = NULL;
+
+
+	fp = fopen("server_torrents", "w");
+	if(!fp)
+	{
+		perror("Error while saving the server torrents\n");
+		exit(EXIT_FAILURE);
+	}
+
+
+
+	fclose(fp);
+}
+
+void server_load_torrents(ListEntry *entries[])
+{
+	FILE *fp = NULL;
+
+	fp = fopen("server_torrents", "r");
+	if(!fp)
+	{
+		perror("Error while loading the server torrents\n");
+		exit(EXIT_FAILURE);
+	}
+}
+
 void server_interruption(int sig)
 {
-	printf("\n\nEnding Frogidel Torrent Server\n");
+	printf("\n\nSaving server torrents\n\n");
+
+	printf("\n\nEnding Frogidel Torrent Server\n\n");
 	exit(EXIT_SUCCESS);
 }

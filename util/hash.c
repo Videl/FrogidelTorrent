@@ -10,13 +10,13 @@ int hashWord(char *word, int length)
 
 	for(i = 0 ; i < length ; i++)
 	{
-		result += (int)pow(word[i], length - 1 - i);
+		result += word[i];
 	}
 
 	return result % 100;
 }
 
-char* sha1(char *filename)
+char* sha1_on_file(char *filename)
 {
 	FILE *fp = NULL;
 	unsigned char temp[SHA_DIGEST_LENGTH];
@@ -50,6 +50,8 @@ char* sha1(char *filename)
 		SHA1_Update(&context, buff, resultRead);
 	} while(resultRead != 0);
 
+
+	fclose(fp);
 
 	SHA1_Final(temp, &context);
 

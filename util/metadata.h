@@ -31,7 +31,7 @@ typedef struct Metadata
 
 Metadata *new_metadata(char name[], char extension[], char keywords[], char hash[]);
 void free_metadata(Metadata *md);
-Metadata *create_metadata_from_path(char pathFile[1000]);
+Metadata *create_metadata_from_path(char pathFile[1000], char keywords[255]);
 int file_exists(char * filename);
 
 #endif /* METADATA_H */

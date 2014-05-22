@@ -141,7 +141,10 @@ void publish_new_file(
         printf(ANSI_COLOR_BLUE SPACER ANSI_COLOR_RESET);
         read_line(file, sizeof(file), stdin);
 
-        LocalFile *fl = file_hotload(file);
+        printf("Please insert the file's tags (comma separated):\n");
+        read_line(keywords, sizeof(file), stdin);
+
+        LocalFile *fl = file_hotload(file, keywords);
 
         if (fl)
         {
@@ -176,6 +179,9 @@ void publish_new_file(
                 }
                 else
                 {
+
+                    sendbuf[n] = '\0';
+
                     // printf("Received %s !\n.", sendbuf);
                     if (strcmp(sendbuf, "PUBLISH_READY") == 0)
                     {
@@ -210,6 +216,11 @@ void publish_new_file(
                             printf("Publishing of file FAILED.\n");
                             printf("Received: %s, %d\n", sendbuf, (int) strlen(sendbuf));
                         }
+                    }
+
+                    else
+                    {
+                        perror("Error when following the publishing protocol.\n");
                     }
                 }
             }
@@ -287,74 +298,81 @@ void search_for_a_file(
                 &len
             );
 
-            if (n < 0 || strcmp(recv_buffer, "SEARCH_READY") != 0)
+            if (n < 0)
             {
                 perror("Error when following the search protocol: ");
             }
             else
             {
-                // Use the port to send the keyword
-                n = sendto(
-                    *serverSocket, 
-                    (void *) keyword, 
-                    (size_t) strlen(keyword), 
-                    0, 
-                    (struct sockaddr *) &search_server, 
-                    sizeof(search_server)
-                );
+                recv_buffer[n] = '\0';
 
-                if (n != strlen(keyword))
-                {
-                    perror("No server accross the network! Can't start searching!\n");
-                    //exit (1);
-                }
+                if(strcmp(recv_buffer, "SEARCH_READY") != 0)
+                    perror("Error when following the search protocol : ");
+
                 else
                 {
-                    // Receive the number of results
-                    char noData[20];
-                    int loops = 0;
-
-                    n = recvfrom(
+                    // Use the port to send the keyword
+                    n = sendto(
                         *serverSocket, 
-                        noData, 
-                        sizeof(noData),
-                        0,
+                        (void *) keyword, 
+                        (size_t) strlen(keyword), 
+                        0, 
                         (struct sockaddr *) &search_server, 
-                        &len
+                        sizeof(search_server)
                     );
-                    loops = atoi(noData);
 
-                    if (n < 0 || loops <= 0)
+                    if (n != strlen(keyword))
                     {
-                        printf("No search results.\n");
+                        perror("No server accross the network! Can't start searching!\n");
+                        //exit (1);
                     }
                     else
                     {
-                        // Prepare a loop with as much loops as needed
-                        Torrent *result = 
-                            malloc(loops*sizeof(Torrent));
-                        if(result == NULL)
+                        // Receive the number of results
+                        char noData[20];
+                        int loops = 0;
+
+                        n = recvfrom(
+                            *serverSocket, 
+                            &loops, 
+                            sizeof(loops),
+                            0,
+                            (struct sockaddr *) &search_server, 
+                            &len
+                        );
+
+                        if (n < 0 || loops <= 0)
                         {
-                            printf("Error when allocating memory for the search result. Exiting.\n");
-                            exit(1);
+                            printf("No search results.\n");
                         }
                         else
                         {
-                            for(i = 0; i < loops; i++)
+                            // Prepare a loop with as much loops as needed
+                            Torrent *result = 
+                                malloc(loops*sizeof(Torrent));
+                            if(result == NULL)
                             {
-                                recvfrom(
-                                    *serverSocket,
-                                    (void *)&result[i], 
-                                    (size_t) sizeof(result[i]),
-                                    0,
-                                    (struct sockaddr *) &search_server,
-                                    &len
-                                );
-                                printf(SPACER "%s\n", result[i].metadata.md_name);
+                                printf("Error when allocating memory for the search result. Exiting.\n");
+                                exit(1);
                             }
+                            else
+                            {
+                                for(i = 0; i < loops; i++)
+                                {
+                                    recvfrom(
+                                        *serverSocket,
+                                        (void *)&result[i], 
+                                        (size_t) sizeof(result[i]),
+                                        0,
+                                        (struct sockaddr *) &search_server,
+                                        &len
+                                    );
+                                    printf(ANTISPACER "[%d] %s\n", i + 1, result[i].metadata.md_name);
+                                }
 
-                            // TODO Send bye message to search server
-                        }       
+                                // TODO Send bye message to search server
+                            }       
+                        }
                     }
                 }
             }
