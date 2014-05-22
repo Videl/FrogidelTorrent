@@ -34,7 +34,13 @@ int main(int argc, char *argv[])
     /** Hashmap of local files */
     ListLocalFile *local_files_list[16];
 
-    iret = pthread_create(&thread_server, NULL, low_energy_server_run, (void*) local_files_list);
+    iret = pthread_create(
+        &thread_server, 
+        NULL, 
+        low_energy_server_run, 
+        (void*) local_files_list
+    );
+
     if(iret)
     {
         fprintf(stderr,"Error - pthread_create() return code: %d\n", iret);
@@ -469,6 +475,95 @@ void download_file(Torrent *results, int no_result)
     printf(ANSI_COLOR_RED SPACER "STARTING DOWNLOAD of %s ### <-" ANSI_COLOR_RESET, results[choice].metadata.md_name);
     printf("\n");
 
+    int dialogSocket = 0;
+    //int clilen = 0;
+    struct sockaddr_in serv_addr;
+    char *welcomeMessage = "Hello world!\n";
+    //char clientBuffer[100];
+    char serverBuffer[100];
+    memset(&serverBuffer, 0, sizeof(serverBuffer));
+    strcpy(serverBuffer, welcomeMessage);
+
+
+    // Distant address set to the socket
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_port = htons(PORT_ON_PAIR);
+    serv_addr.sin_addr.s_addr = inet_addr(results[choice].pair_address);
+    //inet_ntop(AF_INET, results[choice].pair_address, &serv_addr);
+    
+    dialogSocket = socket(PF_INET, SOCK_STREAM, 0);
+
+    if(dialogSocket < 0)
+    {
+        perror("Error while opening the listening socket\n");
+        exit(EXIT_FAILURE);
+    }
+    {
+
+        struct timeval timeout;      
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+
+        if (setsockopt (dialogSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+                    sizeof(timeout)) < 0)
+        {
+            // error("setsockopt failed\n");        
+            // Who cares
+        }
+
+        if (setsockopt (dialogSocket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+                    sizeof(timeout)) < 0)
+        {
+            // error("setsockopt failed\n");        
+            // Who cares
+        }
+
+        char request[46];
+        sprintf(request, "GET %s", results[choice].metadata.md_hash);
+        send(dialogSocket, request, strlen(request), 0);
+
+        char buffer[8192];
+        FILE *input_file = fopen(results[choice].metadata.md_name, "a");
+
+        while (1)
+        {
+            // Read data into buffer.  We may not have enough to 
+            // fill up buffer, so we
+            // store how many bytes were actually read in bytes_read.
+            int bytes_read = read(
+                dialogSocket, 
+                buffer, 
+                sizeof(buffer)
+            );
+            if (bytes_read == 0) // We're done reading from the file
+                break;
+
+            if (bytes_read < 0) {
+                // handle errors
+            }
+
+            // You need a loop for the write, because not all of 
+            // the data may be written
+            // in one call; write will return how many bytes 
+            // were written. p keeps
+            // track of where in the buffer we are, while we 
+            // decrement bytes_read
+            // to keep track of how many bytes are left to write.
+            void *p = buffer;
+            while (bytes_read > 0) 
+            {
+                int bytes_written = write(fileno(input_file), p, bytes_read);
+                if (bytes_written <= 0) 
+                {
+                    // handle errors
+                }
+                bytes_read -= bytes_written;
+                p += bytes_written;
+            }
+        }
+
+        fclose(input_file);
+    }
 }
 
 void *low_energy_server_run(void * list)
