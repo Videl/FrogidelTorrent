@@ -15,6 +15,7 @@
 #include "util/usermenu.h"
 #include "util/constants.h"
 #include "util/local_file.h"
+#include "util/torrent.h"
 
 int main(int argc, char *argv[])
 {
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
 				break;
 			case 2:
 				printf("Search for a file.\n");
-                search_for_a_file();
+                search_for_a_file(&serverSocket, serv_addr);
 
 				break;
             case 3:
@@ -131,8 +132,14 @@ void publish_new_file(
         {
             // <<< PUBLISH THE FILE TO SERVER >>>
             
-            n = sendto(*serverSocket, "PUBLISH", strlen("PUBLISH"), 0, 
-                (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+            n = sendto(
+                *serverSocket, 
+                "PUBLISH", 
+                strlen("PUBLISH"), 
+                0, 
+                (struct sockaddr *) &serv_addr, 
+                sizeof(serv_addr)
+            );
 
             if (n != strlen("PUBLISH"))
             {
@@ -150,7 +157,7 @@ void publish_new_file(
                 if (n < 0)
                 {
                     perror("Error when following the publishing protocol.\n");
-                    exit(1);
+                    //exit(1);
                 }
                 else
                 {
@@ -216,20 +223,129 @@ void publish_new_file(
     }
 }
 
-void search_for_a_file()
+void search_for_a_file(
+    int *serverSocket, 
+    struct sockaddr_in serv_addr)
 {
     int stop = 1;
+    char recv_buffer[1500];
+
     while(stop)
     {
         printf("\n");
         printf("Please insert one keyword to search for: \n");
-        char file[500];
+        char keyword[500];
+        int i = 0;
+        int n;
+        socklen_t len = sizeof(serv_addr);
 
         printf(ANSI_COLOR_BLUE SPACER ANSI_COLOR_RESET);
-        read_line(file, sizeof(file), stdin);
+        read_line(keyword, sizeof(keyword), stdin);
 
+
+        // <<< BEGIN SEARCH >>>
         
+        // Begin search
+        n = sendto(
+            *serverSocket, 
+            "GET", 
+            strlen("GET"), 
+            0,
+            (struct sockaddr *) &serv_addr, 
+            sizeof(serv_addr)
+        );
 
+        if (n != strlen("GET"))
+        {
+            perror("No server accross the network! Can't start searching!\n");
+            //exit (1);
+        }
+        else
+        {
+            // Receive the port
+            struct sockaddr_in search_server;
+            n = recvfrom(
+                *serverSocket, 
+                recv_buffer, 
+                sizeof(recv_buffer)-1,
+                0,
+                (struct sockaddr *) &search_server, 
+                &len
+            );
+
+            if (n < 0 || strcmp(recv_buffer, "SEAAAARCH") != 0)
+            {
+                perror("Error when following the search protocol: ");
+            }
+            else
+            {
+                // Use the port to send the keyword
+                n = sendto(
+                    *serverSocket, 
+                    (void *) keyword, 
+                    (size_t) strlen(keyword), 
+                    0, 
+                    (struct sockaddr *) &search_server, 
+                    sizeof(search_server)
+                );
+
+                if (n != strlen("SEAAAARCH"))
+                {
+                    perror("No server accross the network! Can't start searching!\n");
+                    //exit (1);
+                }
+                else
+                {
+                    // Receive the number of results
+                    char noData[20];
+                    int loops = 0;
+
+                    n = recvfrom(
+                        *serverSocket, 
+                        noData, 
+                        sizeof(noData)-1,
+                        0,
+                        (struct sockaddr *) &search_server, 
+                        &len
+                    );
+                    loops = atoi(noData);
+
+                    if (n < 0 || loops <= 0)
+                    {
+                        printf("No search results.\n");
+                    }
+                    else
+                    {
+                        // Prepare a loop with as much loops as needed
+                        Torrent *result = 
+                            malloc(loops*sizeof(Torrent));
+                        if(result == NULL)
+                        {
+                            printf("Error when allocating memory for the search result. Exiting.\n");
+                            exit(1);
+                        }
+                        else
+                        {
+                            for(i = 0; i < loops; i++)
+                            {
+                                recvfrom(
+                                    *serverSocket,
+                                    (void *)&result[i], 
+                                    (size_t) sizeof(result[i]),
+                                    0,
+                                    (struct sockaddr *) &search_server,
+                                    &len
+                                );
+                                printf(SPACER "%s\n", result[i].metadata.md_name);
+                            }
+
+                            // TODO Send bye message to search server
+                        }       
+                    }
+                }
+            }
+        }
+        
         char *usermenu_continue[1] = {"Continue"};
         int choice = print_user_menu(usermenu_continue, 1);
         switch(choice)
@@ -264,7 +380,7 @@ void setup_publish_server(struct sockaddr_in *serv_addr, int *serverSocket, char
     }
 
     struct timeval timeout;      
-    timeout.tv_sec = 10;
+    timeout.tv_sec = 5;
     timeout.tv_usec = 0;
 
     if (setsockopt (*serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
