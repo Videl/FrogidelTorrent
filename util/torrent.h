@@ -6,7 +6,7 @@ typedef struct Torrent
     /*
     * Pair address
     */
-    char pair_address[100];
+    struct sockaddr_in pair_address;
 
     /*
     * File metadata

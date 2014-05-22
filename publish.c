@@ -90,7 +90,7 @@ Torrent publish(struct sockaddr_in client_addr, int clilen)
 	*/
 	close(publish_socket);
 
-	inet_ntop(AF_INET, &client_addr, result.pair_address, sizeof(result.pair_address));
+	result.pair_address = client_addr;
 	result.metadata = metadataFile;
 
 	return result;
