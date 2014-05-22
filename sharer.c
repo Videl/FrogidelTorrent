@@ -366,8 +366,8 @@ void search_for_a_file(
                                         0,
                                         (struct sockaddr *) &search_server,
                                         &len
-                                    );
-                                    printf(ANTISPACER "[%d] %s\n", i + 1, result[i].metadata.md_name);
+                                    ); 
+                                    printf(ANSI_COLOR_CYAN ANTISPACER "[%d] %s\n" ANSI_COLOR_RESET, i + 1, result[i].metadata.md_name);
                                 }
 
                                 // TODO Send bye message to search server
